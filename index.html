@@ -59,23 +59,23 @@
 </div>
 
 <script>
-// Ultra-reliable meme links from permanent sources (Wikipedia, Giphy, etc.)
+// Your requested meme database
 const memeDB = [
-    { url: "https://upload.wikimedia.org/wikipedia/en/b/be/Disloyal_man_with_his_girlfriend_looking_at_another_girl.jpg", ans: ["distracted boyfriend", "boyfriend"] },
-    { url: "https://i.ytimg.com/vi/0oBx7Jg4m-o/maxresdefault.jpg", ans: ["this is fine", "dog fire"] },
-    { url: "http://i0.kym-cdn.com/photos/images/facebook/000/011/350/pic60016_www.kepfeltoltes.hu_.jpg", ans: ["success kid", "fist pump"] },
-    { url: "https://media.giphy.com/media/3o7TKSj0S1-3-0/giphy.gif", ans: ["confused travolta", "travolta"] },
-    { url: "https://media.giphy.com/media/26gR0YF6pC8D6K7Ww/giphy.gif", ans: ["salt bae"] },
-    { url: "https://upload.wikimedia.org/wikipedia/en/thumb/9/95/HideThePainHarold.jpg/800px-HideThePainHarold.jpg", ans: ["hide the pain harold", "harold"] },
-    { url: "https://upload.wikimedia.org/wikipedia/en/4/4f/Woman_yelling_at_a_cat.jpg", ans: ["woman yelling at cat"] },
-    { url: "https://upload.wikimedia.org/wikipedia/en/9/9d/Drake_hotline_bling.jpg", ans: ["drake", "hotline bling"] },
-    { url: "https://upload.wikimedia.org/wikipedia/en/8/89/ChangeMyMind.jpg", ans: ["change my mind"] },
-    { url: "https://upload.wikimedia.org/wikipedia/en/2/2a/Stonks.jpg", ans: ["stonks"] },
-    { url: "https://upload.wikimedia.org/wikipedia/en/0/0b/Surprised_Pikachu_HD.png", ans: ["surprised pikachu", "pikachu"] },
-    { url: "https://upload.wikimedia.org/wikipedia/en/3/3f/Crying_Michael_Jordan.jpg", ans: ["crying jordan", "jordan"] },
-    { url: "https://upload.wikimedia.org/wikipedia/en/9/96/One_Does_Not_Simply_Walk_into_Mordor.jpg", ans: ["one does not simply", "boromir"] },
-    { url: "https://upload.wikimedia.org/wikipedia/en/4/47/Grumpy_Cat.jpg", ans: ["grumpy cat"] },
-    { url: "https://upload.wikimedia.org/wikipedia/en/0/0d/Pepe_the_Frog.jpg", ans: ["pepe", "feels good man"] }
+  { url: "https://upload.wikimedia.org/wikipedia/en/b/be/Disloyal_man_with_his_girlfriend_looking_at_another_girl.jpg", ans: ["distracted boyfriend","boyfriend"] },
+  { url: "https://upload.wikimedia.org/wikipedia/en/4/47/This_Is_Fine.jpg", ans: ["this is fine","dog fire"] },
+  { url: "https://upload.wikimedia.org/wikipedia/en/0/0f/SuccessKid.jpg", ans: ["success kid","fist pump"] },
+  { url: "https://upload.wikimedia.org/wikipedia/en/1/1e/Confused_Travolta.jpg", ans: ["confused travolta","travolta"] },
+  { url: "https://upload.wikimedia.org/wikipedia/en/6/6f/Salt_Bae.jpg", ans: ["salt bae"] },
+  { url: "https://upload.wikimedia.org/wikipedia/en/9/95/HideThePainHarold.jpg", ans: ["hide the pain harold","harold"] },
+  { url: "https://upload.wikimedia.org/wikipedia/en/4/4f/Woman_yelling_at_a_cat.jpg", ans: ["woman yelling at cat"] },
+  { url: "https://upload.wikimedia.org/wikipedia/en/9/9d/Drake_Hotline_Bling.jpg", ans: ["drake","hotline bling"] },
+  { url: "https://upload.wikimedia.org/wikipedia/en/8/89/ChangeMyMind.jpg", ans: ["change my mind"] },
+  { url: "https://upload.wikimedia.org/wikipedia/en/2/2a/Stonks.jpg", ans: ["stonks"] },
+  { url: "https://upload.wikimedia.org/wikipedia/en/0/0b/Surprised_Pikachu_HD.png", ans: ["surprised pikachu","pikachu"] },
+  { url: "https://upload.wikimedia.org/wikipedia/en/3/3f/Crying_Michael_Jordan.jpg", ans: ["crying jordan","jordan"] },
+  { url: "https://upload.wikimedia.org/wikipedia/en/9/96/One_Does_Not_Simply_Walk_into_Mordor.jpg", ans: ["one does not simply","boromir"] },
+  { url: "https://upload.wikimedia.org/wikipedia/en/4/47/Grumpy_Cat.jpg", ans: ["grumpy cat"] },
+  { url: "https://upload.wikimedia.org/wikipedia/en/0/0d/Pepe_the_Frog.jpg", ans: ["pepe","feels good man"] }
 ];
 
 let peer, conn, myName, scores = {}, isHost = false, currentIdx = -1, timeLeft = 30, timerActive = false;
@@ -162,7 +162,7 @@ function triggerStart() {
 
 function validate(user, val) {
     const guess = val.toLowerCase().trim();
-    const correct = memeDB[currentIdx].ans.some(a => guess.includes(a));
+    const correct = memeDB[currentIdx].ans.some(a => guess.includes(a.toLowerCase()));
     if (correct) {
         scores[user] = (scores[user] || 0) + 10;
         broadcast({ type: 'win' });
@@ -187,7 +187,7 @@ function renderMeme(idx) {
     img.style.display = 'none';
     img.src = memeDB[idx].url;
     img.onload = () => { loader.style.display = 'none'; img.style.display = 'block'; };
-    img.onerror = () => { loader.textContent = 'Failed – skipping...'; setTimeout(nextMeme, 2000); };
+    img.onerror = () => { loader.textContent = 'Image failed – skipping...'; setTimeout(nextMeme, 2000); };
     if (isHost) timerActive = true;
     document.getElementById('guessInput').value = '';
     document.getElementById('guessInput').focus();
