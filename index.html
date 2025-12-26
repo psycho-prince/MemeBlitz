@@ -4,30 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer">
-    <title>MemeBlitz 50 - Pro Edition</title>
+    <title>MemeBlitz 50 - By prince philip</title>
+    <link rel="preconnect" href="https://i.kym-cdn.com">
+    <link rel="dns-prefetch" href="https://i.kym-cdn.com">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root { --primary: #00ff88; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
         body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); text-align: center; margin: 0; padding: 10px; }
         .container { max-width: 800px; margin: 10px auto; background: var(--card); padding: 25px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        
-        /* Lobby Player List */
-        #playerListLobby { background: #0f172a; padding: 15px; border-radius: 10px; margin: 20px 0; text-align: left; }
-        .player-tag { display: inline-block; background: var(--primary); color: #000; padding: 5px 12px; border-radius: 20px; margin: 5px; font-weight: bold; }
-
         .timer-wrap { width: 100%; height: 10px; background: #334155; border-radius: 5px; margin: 10px 0; overflow: hidden; }
         #timerBar { width: 100%; height: 100%; background: var(--primary); transition: width 1s linear; }
-        
-        .meme-box { min-height: 400px; background: #000; border-radius: 15px; display: flex; align-items: center; justify-content: center; border: 3px solid #334155; position: relative; }
+        .meme-box { min-height: 400px; background: #000; border-radius: 15px; display: flex; align-items: center; justify-content: center; border: 3px solid #334155; }
         img { max-width: 100%; max-height: 480px; display: none; }
-        
         input { padding: 15px; width: 85%; border-radius: 10px; border: 2px solid #334155; font-size: 18px; background: #020617; color: white; margin-bottom: 10px; }
-        .btn { padding: 15px 30px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+        .btn { padding: 15px 30px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         .btn-start { background: var(--primary); color: #000; font-size: 20px; width: 100%; margin-top: 20px; }
-        
         #scoreList { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 20px; }
         .score-item { background: #334155; padding: 10px; border-radius: 8px; border-left: 5px solid var(--primary); font-size: 14px; text-align: left; }
-        
+        .player-tag { display: inline-block; background: var(--primary); color: #000; padding: 5px 12px; border-radius: 20px; margin: 5px; font-weight: bold; }
         .hidden { display: none; }
         .flash-win { background: #065f46 !important; }
     </style>
@@ -35,21 +29,20 @@
 <body>
 
 <div class="container">
-    <h1 style="color: var(--primary);">MEMEBLITZ 50</h1>
+    <h1 style="color: var(--primary);">MEMEBLITZ 50 ⚡</h1>
     
     <div id="setupScreen">
-        <input type="text" id="username" placeholder="Enter Your Nickname">
-        <div style="display:flex; gap:10px; justify-content:center; margin-top:10px;">
+        <input type="text" id="username" placeholder="Nickname">
+        <div style="display:flex; gap:10px; justify-content:center;">
             <button class="btn" style="background:var(--primary)" onclick="init(true)">CREATE ROOM</button>
-            <button class="btn" style="background:#38bdf8" onclick="init(false)">JOIN FRIENDS</button>
+            <button class="btn" style="background:#38bdf8" onclick="init(false)">JOIN ROOM</button>
         </div>
-        <input type="text" id="joinId" placeholder="Paste Room ID here" style="margin-top:10px;">
+        <input type="text" id="joinId" placeholder="Room ID" style="margin-top:10px;">
     </div>
 
     <div id="lobbyScreen" class="hidden">
-        <h2 id="roomDisplay">Waiting for Players...</h2>
-        <div id="playerListLobby"></div>
-        <p style="font-size: 0.9em; opacity: 0.7;">Share the ID above with your friends.</p>
+        <h2 id="roomDisplay">Connecting...</h2>
+        <div id="playerListLobby" style="background: #0f172a; padding: 15px; border-radius: 10px; margin: 20px 0;"></div>
         <button id="startBtn" class="btn btn-start hidden" onclick="triggerStart()">START GAME 🚀</button>
         <div id="waitMsg" style="color: var(--primary);">Waiting for Host to start...</div>
     </div>
@@ -57,70 +50,80 @@
     <div id="gameUI" class="hidden">
         <div class="timer-wrap"><div id="timerBar"></div></div>
         <div id="timeText">30s</div>
-        
         <div class="meme-box">
-            <div id="loader" style="color: var(--primary); font-weight: bold;">📥 DOWNLOADING MEME...</div>
+            <div id="loader">⚡ FLASH LOADING...</div>
             <img id="memeImg" src="">
         </div>
-
-        <input type="text" id="guessInput" placeholder="GUESS THE MEME!" onkeyup="if(event.key==='Enter') sendGuess()">
+        <input type="text" id="guessInput" placeholder="TYPE ANSWER!" onkeyup="if(event.key==='Enter') sendGuess()">
         <div id="hostControls" class="hidden">
-            <button class="btn" style="background:#fbbf24; width:100%" onclick="nextMeme()">SKIP / NEXT ⏭️</button>
+            <button class="btn" style="background:#fbbf24; width:100%" onclick="nextMeme()">SKIP ⏭️</button>
         </div>
         <div id="scoreList"></div>
     </div>
 </div>
 
 <script>
+// --- STEP 1: PRELOAD ENGINE ---
+const imageCache = new Map();
+function preloadImage(url) {
+    if (imageCache.has(url)) return imageCache.get(url);
+    const img = new Image();
+    const promise = new Promise(resolve => {
+        img.onload = () => resolve(img);
+        img.onerror = () => resolve(img); // Avoid hanging on broken links
+        img.src = url;
+    });
+    imageCache.set(url, promise);
+    return promise;
+}
+
 const memeDB = [
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/017/933/Distracted-Boyfriend.jpg", ans: ["boyfriend", "distracted"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/026/017/doge.jpg", ans: ["doge", "shiba"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/022/025/this_is_fine.jpg", ans: ["fine", "dog fire"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/004/564/SuccessKid.jpg", ans: ["success", "kid"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/028/880/Wojak.jpg", ans: ["wojak", "feels guy"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/017/659/Crying_Jordan.png", ans: ["jordan", "crying"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/052/695/druski-dancing.jpg", ans: ["druski"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/022/686/woman-yelling-at-cat.jpg", ans: ["cat", "yelling"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/017/933/Distracted-Boyfriend.jpg", ans: ["boyfriend", "distracted"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/026/017/doge.jpg", ans: ["doge", "shiba"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/022/025/this_is_fine.jpg", ans: ["fine", "dog fire"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/004/564/SuccessKid.jpg", ans: ["success", "kid"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/028/880/Wojak.jpg", ans: ["wojak", "feels guy"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/017/659/Crying_Jordan.png", ans: ["jordan", "crying"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/052/695/druski-dancing.jpg", ans: ["druski"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/022/686/woman-yelling-at-cat.jpg", ans: ["cat", "yelling"] },
     { url: "https://i.kym-cdn.com/photos/images/newsfeed/001/787/307/ab5.png", ans: ["vibe", "brainrot"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/000/019/Wonka.jpg", ans: ["wonka", "willy"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/016/051/this-is-a-pigeon.jpg", ans: ["pigeon"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/014/221/drakeposting.jpg", ans: ["drake"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/016/601/MockingSpongeBob.jpg", ans: ["spongebob"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/000/105/LeoCheers.jpg", ans: ["gatsby", "leo"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/024/151/expanding-brain.jpg", ans: ["brain"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/040/152/surprised-pikachu.jpg", ans: ["pikachu"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/041/118/bernie-mittens.jpg", ans: ["bernie", "mittens"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/034/852/galaxy-brain.jpg", ans: ["galaxy"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/020/167/krabs.jpg", ans: ["krabs", "blur"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/000/106/LaughingDiCaprio.jpg", ans: ["leo", "django"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/002/345/roll-safe.jpg", ans: ["roll safe", "smart guy"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/001/234/arthur-clenched-fist.jpg", ans: ["arthur", "fist"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/009/876/UNO-card-meme.jpg", ans: ["uno"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/019/501/Who-Killed-Hannibal.jpg", ans: ["hannibal", "shooting"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/008/567/Spongebob-Ight-Imma-Head-Out.jpg", ans: ["head out", "spongebob"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/030/987/Is-This-Loss.jpg", ans: ["loss"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/033/003/Surprised-Cat.jpg", ans: ["cat"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/010/555/UNO-Reverse-Card.jpg", ans: ["reverse"] }
-    // Add rest of your 50 here...
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/000/019/Wonka.jpg", ans: ["wonka", "willy"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/016/051/this-is-a-pigeon.jpg", ans: ["pigeon"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/014/221/drakeposting.jpg", ans: ["drake"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/016/601/MockingSpongeBob.jpg", ans: ["spongebob"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/000/105/LeoCheers.jpg", ans: ["gatsby", "leo"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/024/151/expanding-brain.jpg", ans: ["brain"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/040/152/surprised-pikachu.jpg", ans: ["pikachu"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/041/118/bernie-mittens.jpg", ans: ["bernie", "mittens"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/034/852/galaxy-brain.jpg", ans: ["galaxy"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/020/167/krabs.jpg", ans: ["krabs", "blur"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/000/106/LaughingDiCaprio.jpg", ans: ["leo", "django"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/002/345/roll-safe.jpg", ans: ["roll safe", "smart guy"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/001/234/arthur-clenched-fist.jpg", ans: ["arthur", "fist"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/009/876/UNO-card-meme.jpg", ans: ["uno"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/019/501/Who-Killed-Hannibal.jpg", ans: ["hannibal", "shooting"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/008/567/Spongebob-Ight-Imma-Head-Out.jpg", ans: ["head out", "spongebob"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/030/987/Is-This-Loss.jpg", ans: ["loss"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/033/003/Surprised-Cat.jpg", ans: ["cat"] },
+    { url: "https://i.kym-cdn.com/entries/icons/medium/000/010/555/UNO-Reverse-Card.jpg", ans: ["reverse"] }
+    // Loop repeats or extra links can be added to complete the 50
 ];
 
 let peer, conn, myName, scores = {}, isHost = false, currentIdx = -1, timeLeft = 30, timerActive = false;
 
+// --- STEP 2: MODIFIED INIT ---
 function init(host) {
     isHost = host;
     myName = document.getElementById('username').value || "Player";
     peer = new Peer();
-    
     peer.on('open', id => {
         document.getElementById('setupScreen').classList.add('hidden');
         document.getElementById('lobbyScreen').classList.remove('hidden');
-        
         if(isHost) {
             scores[myName] = 0;
             document.getElementById('roomDisplay').innerText = "ROOM ID: " + id;
             document.getElementById('startBtn').classList.remove('hidden');
             document.getElementById('waitMsg').classList.add('hidden');
-            updateLobbyPlayers();
             setupHost();
         } else {
             conn = peer.connect(document.getElementById('joinId').value);
@@ -129,22 +132,19 @@ function init(host) {
                 setupClient();
             });
         }
+        updateLobbyUI();
+        // PRELOAD START
+        memeDB.forEach(m => preloadImage(m.url));
     });
 }
 
 function setupHost() {
     peer.on('connection', c => {
         c.on('data', data => {
-            if(data.type==='join') { 
-                scores[data.name] = 0; 
-                updateLobbyPlayers();
-                broadcast({type:'sync_lobby', scores}); 
-            }
+            if(data.type==='join') { scores[data.name] = 0; broadcast({type:'sync_lobby', scores}); updateLobbyUI(); }
             if(data.type==='guess') validate(data.name, data.val);
         });
     });
-    
-    // Timer only runs if timerActive is true
     setInterval(() => {
         if(!isHost || !timerActive) return;
         timeLeft--;
@@ -156,16 +156,12 @@ function setupHost() {
 
 function setupClient() {
     conn.on('data', data => {
-        if(data.type==='sync_lobby') { scores = data.scores; updateLobbyPlayers(); }
+        if(data.type==='sync_lobby') { scores = data.scores; updateLobbyUI(); }
         if(data.type==='start_game') { 
             document.getElementById('lobbyScreen').classList.add('hidden');
             document.getElementById('gameUI').classList.remove('hidden');
         }
-        if(data.type==='sync_meme') { 
-            scores = data.scores; 
-            renderMeme(data.idx); 
-            updateScoreUI(); 
-        }
+        if(data.type==='sync_meme') { scores = data.scores; renderMeme(data.idx); }
         if(data.type==='timer') updateTimerUI(data.t);
         if(data.type==='win') winFlash();
     });
@@ -190,27 +186,30 @@ function validate(user, val) {
 }
 
 function nextMeme() {
-    timerActive = false; // Pause timer while loading
+    timerActive = false;
     currentIdx = Math.floor(Math.random() * memeDB.length);
     timeLeft = 30;
     broadcast({type:'sync_meme', scores, idx:currentIdx});
     renderMeme(currentIdx);
 }
 
-function renderMeme(idx) {
+// --- STEP 3: MODIFIED RENDER ---
+async function renderMeme(idx) {
     currentIdx = idx;
-    const img = document.getElementById('memeImg');
-    img.style.display = 'none';
-    document.getElementById('loader').style.display = 'block';
-    
-    img.src = memeDB[idx].url;
-    img.onload = () => {
-        document.getElementById('loader').style.display = 'none';
-        img.style.display = 'block';
-        if(isHost) timerActive = true; // Start timer ONLY when loaded
-    };
+    const imgTag = document.getElementById('memeImg');
+    const loader = document.getElementById('loader');
+    loader.style.display = 'block';
+    imgTag.style.display = 'none';
+
+    const img = await preloadImage(memeDB[idx].url);
+    imgTag.src = img.src;
+    loader.style.display = 'none';
+    imgTag.style.display = 'block';
+
+    if (isHost) timerActive = true;
     document.getElementById('guessInput').value = "";
     document.getElementById('guessInput').focus();
+    updateScoreUI();
 }
 
 function sendGuess() {
@@ -224,9 +223,8 @@ function updateTimerUI(t) {
     document.getElementById('timeText').innerText = t + "s";
 }
 
-function updateLobbyPlayers() {
-    const div = document.getElementById('playerListLobby');
-    div.innerHTML = Object.keys(scores).map(n => `<span class="player-tag">${n}</span>`).join('');
+function updateLobbyUI() {
+    document.getElementById('playerListLobby').innerHTML = Object.keys(scores).map(n => `<span class="player-tag">${n}</span>`).join('');
 }
 
 function updateScoreUI() {
@@ -235,7 +233,6 @@ function updateScoreUI() {
 }
 
 function broadcast(d) {
-    updateScoreUI();
     if(peer.connections) {
         Object.values(peer.connections).forEach(conns => conns.forEach(c => c.send(d)));
     }
@@ -248,3 +245,4 @@ function winFlash() {
 </script>
 </body>
 </html>
+
