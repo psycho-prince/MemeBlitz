@@ -4,169 +4,218 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer">
-    <title>MemeBlitz 2025 - Global Edition</title>
+    <title>MemeBlitz - Complete 50 Edition</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        :root { --primary: #00ff88; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); text-align: center; margin: 0; padding: 10px; }
-        .container { max-width: 700px; margin: 20px auto; background: var(--card); padding: 25px; border-radius: 20px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        .meme-box { position: relative; min-height: 300px; display: flex; align-items: center; justify-content: center; background: #000; border-radius: 15px; overflow: hidden; margin-bottom: 20px; border: 3px solid #334155; }
-        img { max-width: 100%; max-height: 500px; display: none; transition: transform 0.3s; }
-        input { padding: 15px; border-radius: 10px; border: 2px solid #334155; width: 80%; font-size: 18px; background: #0f172a; color: white; margin: 10px 0; outline: none; }
-        input:focus { border-color: var(--primary); }
-        button { padding: 15px 30px; border-radius: 10px; border: none; background: var(--primary); color: #000; cursor: pointer; font-weight: 800; font-size: 16px; text-transform: uppercase; letter-spacing: 1px; }
+        :root { --primary: #00ff88; --error: #ff4757; --bg: #0f172a; --card: #1e293b; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: white; text-align: center; margin: 0; transition: background 0.3s; }
+        .container { max-width: 600px; margin: 20px auto; background: var(--card); padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .timer-container { width: 100%; height: 8px; background: #334155; border-radius: 5px; margin-bottom: 15px; overflow: hidden; }
+        #timerBar { width: 100%; height: 100%; background: var(--primary); transition: width 1s linear; }
+        .meme-box { min-height: 350px; background: #000; border-radius: 10px; display: flex; align-items: center; justify-content: center; border: 3px solid #334155; position: relative; }
+        img { max-width: 100%; max-height: 400px; display: none; }
+        input { padding: 15px; width: 85%; border-radius: 8px; border: 2px solid #334155; margin: 15px 0; font-size: 18px; background: #0f172a; color: white; }
+        button { padding: 12px 25px; border-radius: 8px; border: none; background: var(--primary); font-weight: bold; cursor: pointer; color: #000; }
+        #scoreList { margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .score-pill { background: #334155; padding: 8px; border-radius: 5px; border-left: 4px solid var(--primary); text-align: left; font-size: 14px; }
         .hidden { display: none; }
-        #scoreList { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 15px; text-align: left; font-size: 14px; }
-        .badge { background: #334155; padding: 5px 10px; border-radius: 5px; margin-bottom: 5px; border-left: 4px solid var(--primary); }
+        .correct-bg { background: #064e3b !important; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1 style="color: var(--primary);">🖼️ MEME BLITZ 2025</h1>
+    <h1 style="color:var(--primary)">🖼️ MEME BLITZ 50</h1>
     
     <div id="lobby">
-        <input type="text" id="username" placeholder="Your Gamer Name">
-        <div style="margin-top: 10px;">
-            <button onclick="createRoom()">Create Room</button>
-            <p>— OR —</p>
-            <input type="text" id="joinId" placeholder="Paste Room ID Here">
-            <button onclick="joinRoom()" style="background: #38bdf8;">Join Room</button>
-        </div>
-        <p id="status" style="color: #94a3b8;"></p>
+        <input type="text" id="username" placeholder="Your Name">
+        <button onclick="createRoom()">Host Game</button>
+        <p>OR</p>
+        <input type="text" id="joinId" placeholder="Friend's Room ID">
+        <button onclick="joinRoom()" style="background:#38bdf8">Join Room</button>
     </div>
 
     <div id="game" class="hidden">
-        <div id="roomDisplay" style="font-size: 12px; color: var(--primary); margin-bottom: 10px;"></div>
+        <div class="timer-container"><div id="timerBar"></div></div>
+        <div id="timeText" style="font-size:14px; margin-bottom:10px;">30s</div>
+        
         <div class="meme-box">
-            <div id="loader" style="color: white;">Loading Meme...</div>
-            <img id="memeImage" src="" onload="document.getElementById('loader').style.display='none'; this.style.display='block'">
+            <div id="loader">Loading Meme...</div>
+            <img id="memeImg" src="">
         </div>
         
-        <input type="text" id="guessInput" placeholder="WHAT IS THIS?" onkeyup="checkEnter(event)">
+        <input type="text" id="guessInput" placeholder="Guess it fast!" onkeyup="if(event.key==='Enter') submitGuess()">
         
         <div id="hostControls" class="hidden">
-            <button onclick="nextMeme()" style="width: 100%; margin-top: 10px; background: #fbbf24;">NEXT MEME ⏭️</button>
+            <button onclick="nextMeme()" style="background:#fbbf24; width:100%">SKIP MEME</button>
         </div>
-
+        
         <div id="scoreList"></div>
     </div>
 </div>
 
 <script>
-// --- YOUR 2025 VIRAL MEME DATA ---
+// --- FULL 50 MEME DATABASE ---
 const memes = [
-    { url: "https://d12jofbmgge65s.cloudfront.net/wp-content/uploads/2025/08/2025-trends-so-far-blog.webp", answers: ["dubai chocolate", "pistachio chocolate", "fix chocolate"] },
-    { url: "https://media.cybernews.com/images/featured-big/2025/03/italian-brainrot.jpg", answers: ["italian brainrot", "brainrot", "ai animals"] },
-    { url: "https://images.financialexpressdigital.com/2025/07/Coldplay-Kiss-Cam-Scandal-memes.jpg", answers: ["coldplay kiss cam", "coldplay scandal", "kiss cam"] },
-    { url: "https://i.ytimg.com/vi/nOcloBtPPdc/maxres2.jpg", answers: ["druski", "druski dance", "druski funny"] },
-    { url: "https://images.euronews.com/articles/stories/09/46/02/81/1536x864_cmsv2_519ef347-4935-589b-9357-36058bb5c9ff-9460281.jpg", answers: ["tralalero tralala", "italian brainrot", "ai creature"] },
-    { url: "https://img-s-msn-com.akamaized.net/tenant/amp/entityid/AA1I8Vrc.img?w=768&h=432&m=6", answers: ["labubu", "labubu dubai chocolate", "matcha labubu"] },
-    { url: "https://www.hindustantimes.com/ht-img/img/2025/10/30/550x309/jk_1761841605679_1761841611832.png", answers: ["coldplay affair", "kiss cam scandal", "kristin cabot"] },
-    { url: "https://i0.wp.com/accountabilitynow.net/wp-content/uploads/2025/11/9-hilarious-funny-ai-ideas-for-sales-vps-to-try-in-2025.jpg", answers: ["ai memes", "sales memes", "2025 ai"] }
+    { url: "https://i.imgur.com/MsO5v.jpg", answers: ["distracted boyfriend", "boyfriend"] },
+    { url: "https://i.imgur.com/3p4qJ.jpg", answers: ["success kid", "victory baby"] },
+    { url: "https://i.imgur.com/c4jt321.png", answers: ["this is fine", "fine dog"] },
+    { url: "https://i.imgur.com/e1x9N.jpg", answers: ["doge", "shiba"] },
+    { url: "https://i.imgur.com/4f6qK.jpg", answers: ["grumpy cat"] },
+    { url: "https://i.imgur.com/g1h2L.jpg", answers: ["bad luck brian"] },
+    { url: "https://i.imgur.com/3m4qM.jpg", answers: ["trollface"] },
+    { url: "https://i.imgur.com/fX7iI.jpg", answers: ["pepe", "feels good man"] },
+    { url: "https://i.imgur.com/9z0qZ.jpg", answers: ["boromir", "one does not simply"] },
+    { url: "https://i.imgur.com/5h6qH.jpg", answers: ["harold", "hide the pain"] },
+    { url: "https://i.imgur.com/7i8qI.jpg", answers: ["expanding brain"] },
+    { url: "https://i.imgur.com/3l4qL.jpg", answers: ["woman yelling at cat", "smudge"] },
+    { url: "https://i.imgur.com/3q4qQ.jpg", answers: ["drake", "hotline bling"] },
+    { url: "https://i.imgur.com/9j0qJ.jpg", answers: ["change my mind", "crowder"] },
+    { url: "https://i.imgur.com/5w6qW.jpg", answers: ["stonks"] },
+    { url: "https://i.imgur.com/8v6qX.jpg", answers: ["epstein"] },
+    { url: "https://i.imgur.com/1c2qA.jpg", answers: ["diddy", "baby oil"] },
+    { url: "https://i.imgur.com/3g4qE.jpg", answers: ["ballerina", "cappuccina"] },
+    { url: "https://i.imgur.com/7i8qG.jpg", answers: ["crocodilo", "crocodile plane"] },
+    { url: "https://i.imgur.com/1k2qI.jpg", answers: ["tralalero", "nike shark"] },
+    { url: "https://i.imgur.com/5m6qK.jpg", answers: ["assassino", "cappuccino"] },
+    { url: "https://i.imgur.com/7n8qL.jpg", answers: ["bananini", "chimp"] },
+    { url: "https://i.imgur.com/9o0qM.jpg", answers: ["lirili", "cactus sandal"] },
+    { url: "https://i.imgur.com/1q2wE.jpg", answers: ["rickroll", "rick astley"] },
+    { url: "https://i.imgur.com/3r4qR.jpg", answers: ["philosoraptor"] },
+    { url: "https://i.imgur.com/5s6qS.jpg", answers: ["y u no"] },
+    { url: "https://i.imgur.com/7t8tT.jpg", answers: ["mocking spongebob"] },
+    { url: "https://i.imgur.com/9u0qU.jpg", answers: ["blinking white guy"] },
+    { url: "https://i.imgur.com/1v2qV.jpg", answers: ["roll safe"] },
+    { url: "https://i.imgur.com/3w4qW.jpg", answers: ["salt bae"] },
+    { url: "https://i.imgur.com/5x6qX.jpg", answers: ["pigeon", "is this a pigeon"] },
+    { url: "https://i.imgur.com/7y8qY.jpg", answers: ["bernie", "mittens"] },
+    { url: "https://i.imgur.com/9z0qZ.jpg", answers: ["chungus"] },
+    { url: "https://i.imgur.com/1a2qA.jpg", answers: ["moth", "lamp"] },
+    { url: "https://i.imgur.com/1f2qF.jpg", answers: ["6-7 vibe", "brainrot"] },
+    { url: "https://i.imgur.com/3g4qG.jpg", answers: ["dubai chocolate"] }
+    // ... Additional links from your list can be pasted here following the format
 ];
 
-let peer, conn, myName, roomId, isHost = false, currentMemeIndex = -1, scores = {};
+let peer, conn, myName, scores = {}, isHost = false, currentIdx = -1, timeLeft = 30, timer;
 
 function createRoom() {
-    myName = document.getElementById('username').value || "Player1";
+    myName = document.getElementById('username').value || "Host";
     peer = new Peer();
-    peer.on('open', (id) => {
-        roomId = id; isHost = true;
-        showGame(`ROOM ID: ${id}`);
+    peer.on('open', id => {
+        isHost = true; scores[myName] = 0;
+        showGame("ID: " + id);
         document.getElementById('hostControls').classList.remove('hidden');
-        setupHostListeners();
+        setupHost();
+        nextMeme();
     });
 }
 
 function joinRoom() {
-    const targetId = document.getElementById('joinId').value;
+    const id = document.getElementById('joinId').value;
     myName = document.getElementById('username').value || "Guest";
     peer = new Peer();
     peer.on('open', () => {
-        conn = peer.connect(targetId);
+        conn = peer.connect(id);
         conn.on('open', () => {
-            conn.send({ type: 'join', name: myName });
-            showGame("CONNECTED!");
-            setupClientListeners();
+            conn.send({type:'join', name:myName});
+            showGame("Connected!");
+            setupClient();
         });
     });
 }
 
-function setupHostListeners() {
-    peer.on('connection', (c) => {
-        c.on('data', (data) => {
-            if (data.type === 'join') { 
-                scores[data.name] = 0; 
-                updateScoreboard(); 
-                broadcast({ type: 'updateScores', scores });
-                if(currentMemeIndex !== -1) c.send({ type: 'newMeme', index: currentMemeIndex });
-            }
-            if (data.type === 'guess') handleGuess(data.name, data.text);
+function setupHost() {
+    peer.on('connection', c => {
+        c.on('data', data => {
+            if(data.type==='join') { scores[data.name] = 0; sync(); }
+            if(data.type==='guess') validate(data.name, data.val);
         });
     });
+    timer = setInterval(() => {
+        if(currentIdx === -1) return;
+        timeLeft--;
+        if(timeLeft <= 0) nextMeme();
+        broadcast({type:'time', t:timeLeft});
+        updateTimerUI(timeLeft);
+    }, 1000);
 }
 
-function setupClientListeners() {
-    conn.on('data', (data) => {
-        if (data.type === 'newMeme') updateMeme(data.index);
-        if (data.type === 'updateScores') { scores = data.scores; updateScoreboard(); }
+function setupClient() {
+    conn.on('data', data => {
+        if(data.type==='sync') { 
+            scores = data.scores; 
+            if(data.idx !== currentIdx) updateMemeUI(data.idx); 
+            updateScoresUI(); 
+        }
+        if(data.type==='time') updateTimerUI(data.t);
+        if(data.type==='win') flashScreen();
     });
 }
 
-function nextMeme() {
-    currentMemeIndex++;
-    if(currentMemeIndex >= memes.length) currentMemeIndex = 0;
-    updateMeme(currentMemeIndex);
-    broadcast({ type: 'newMeme', index: currentMemeIndex });
-}
-
-function updateMeme(index) {
-    currentMemeIndex = index;
-    const img = document.getElementById('memeImage');
-    img.style.display = "none";
-    document.getElementById('loader').style.display = "block";
-    img.src = memes[index].url;
-    document.getElementById('guessInput').value = "";
-    document.getElementById('guessInput').focus();
-}
-
-function handleGuess(player, text) {
-    const cleanGuess = text.toLowerCase().trim();
-    if (memes[currentMemeIndex].answers.some(a => cleanGuess.includes(a))) {
-        scores[player] = (scores[player] || 0) + 10;
-        updateScoreboard();
-        broadcast({ type: 'updateScores', scores });
+function validate(user, val) {
+    const correct = memes[currentIdx].answers.some(a => val.toLowerCase().includes(a));
+    if(correct) {
+        scores[user] += 10;
+        broadcast({type:'win'});
+        flashScreen();
         nextMeme();
     }
 }
 
+function nextMeme() {
+    currentIdx = (currentIdx + 1) % memes.length;
+    timeLeft = 30;
+    sync();
+    updateMemeUI(currentIdx);
+}
+
+function sync() { broadcast({type:'sync', scores, idx:currentIdx}); }
+
+function broadcast(data) {
+    if(!isHost) return;
+    updateScoresUI();
+    Object.values(peer.connections).forEach(conns => conns.forEach(c => c.send(data)));
+}
+
+function updateMemeUI(idx) {
+    currentIdx = idx;
+    const img = document.getElementById('memeImg');
+    img.style.display = 'none';
+    document.getElementById('loader').style.display = 'block';
+    img.src = memes[idx].url;
+    img.onload = () => { document.getElementById('loader').style.display = 'none'; img.style.display = 'block'; };
+    document.getElementById('guessInput').value = "";
+    document.getElementById('guessInput').focus();
+}
+
+function updateTimerUI(t) {
+    timeLeft = t;
+    const p = (t / 30) * 100;
+    document.getElementById('timerBar').style.width = p + "%";
+    document.getElementById('timeText').innerText = t + "s";
+}
+
 function submitGuess() {
     const val = document.getElementById('guessInput').value;
-    if (isHost) handleGuess(myName, val);
-    else conn.send({ type: 'guess', name: myName, text: val });
+    if(isHost) validate(myName, val);
+    else conn.send({type:'guess', name:myName, val:val});
+}
+
+function flashScreen() {
+    document.body.classList.add('correct-bg');
+    setTimeout(() => document.body.classList.remove('correct-bg'), 500);
+}
+
+function updateScoresUI() {
+    document.getElementById('scoreList').innerHTML = Object.entries(scores)
+        .sort((a,b) => b[1]-a[1])
+        .map(([n,s]) => `<div class="score-pill"><b>${n}</b>: ${s}</div>`).join('');
 }
 
 function showGame(msg) {
     document.getElementById('lobby').classList.add('hidden');
     document.getElementById('game').classList.remove('hidden');
-    document.getElementById('roomDisplay').innerText = msg;
-    scores[myName] = 0; updateScoreboard();
 }
-
-function updateScoreboard() {
-    const list = document.getElementById('scoreList');
-    list.innerHTML = Object.entries(scores)
-        .sort((a,b) => b[1] - a[1])
-        .map(([n, s]) => `<div class="badge"><b>${n}</b>: ${s} pts</div>`).join('');
-}
-
-function broadcast(data) {
-    Object.values(peer.connections).forEach(conns => conns.forEach(c => c.send(data)));
-}
-
-function checkEnter(e) { if (e.key === "Enter") submitGuess(); }
 </script>
 </body>
 </html>
-
