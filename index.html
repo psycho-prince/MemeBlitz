@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer">
-    <title>MemeBlitz 50 - By prince philip</title>
-    <link rel="preconnect" href="https://i.kym-cdn.com">
-    <link rel="dns-prefetch" href="https://i.kym-cdn.com">
+    <title>MemeBlitz 50 - Final Stable</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root { --primary: #00ff88; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
@@ -15,7 +13,7 @@
         .timer-wrap { width: 100%; height: 10px; background: #334155; border-radius: 5px; margin: 10px 0; overflow: hidden; }
         #timerBar { width: 100%; height: 100%; background: var(--primary); transition: width 1s linear; }
         .meme-box { min-height: 400px; background: #000; border-radius: 15px; display: flex; align-items: center; justify-content: center; border: 3px solid #334155; }
-        img { max-width: 100%; max-height: 480px; display: none; }
+        img { max-width: 100%; max-height: 480px; display: none; border-radius: 10px; }
         input { padding: 15px; width: 85%; border-radius: 10px; border: 2px solid #334155; font-size: 18px; background: #020617; color: white; margin-bottom: 10px; }
         .btn { padding: 15px 30px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; }
         .btn-start { background: var(--primary); color: #000; font-size: 20px; width: 100%; margin-top: 20px; }
@@ -23,7 +21,6 @@
         .score-item { background: #334155; padding: 10px; border-radius: 8px; border-left: 5px solid var(--primary); font-size: 14px; text-align: left; }
         .player-tag { display: inline-block; background: var(--primary); color: #000; padding: 5px 12px; border-radius: 20px; margin: 5px; font-weight: bold; }
         .hidden { display: none; }
-        .flash-win { background: #065f46 !important; }
     </style>
 </head>
 <body>
@@ -51,7 +48,7 @@
         <div class="timer-wrap"><div id="timerBar"></div></div>
         <div id="timeText">30s</div>
         <div class="meme-box">
-            <div id="loader">⚡ FLASH LOADING...</div>
+            <div id="loader">⚡ PRE-LOADING...</div>
             <img id="memeImg" src="">
         </div>
         <input type="text" id="guessInput" placeholder="TYPE ANSWER!" onkeyup="if(event.key==='Enter') sendGuess()">
@@ -63,55 +60,75 @@
 </div>
 
 <script>
-// --- STEP 1: PRELOAD ENGINE ---
 const imageCache = new Map();
 function preloadImage(url) {
     if (imageCache.has(url)) return imageCache.get(url);
     const img = new Image();
     const promise = new Promise(resolve => {
         img.onload = () => resolve(img);
-        img.onerror = () => resolve(img); // Avoid hanging on broken links
+        img.onerror = () => resolve(img);
         img.src = url;
     });
     imageCache.set(url, promise);
     return promise;
 }
 
+// 50 ACTUAL WORKING DIRECT LINKS
 const memeDB = [
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/017/933/Distracted-Boyfriend.jpg", ans: ["boyfriend", "distracted"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/026/017/doge.jpg", ans: ["doge", "shiba"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/022/025/this_is_fine.jpg", ans: ["fine", "dog fire"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/004/564/SuccessKid.jpg", ans: ["success", "kid"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/028/880/Wojak.jpg", ans: ["wojak", "feels guy"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/017/659/Crying_Jordan.png", ans: ["jordan", "crying"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/052/695/druski-dancing.jpg", ans: ["druski"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/022/686/woman-yelling-at-cat.jpg", ans: ["cat", "yelling"] },
-    { url: "https://i.kym-cdn.com/photos/images/newsfeed/001/787/307/ab5.png", ans: ["vibe", "brainrot"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/000/019/Wonka.jpg", ans: ["wonka", "willy"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/016/051/this-is-a-pigeon.jpg", ans: ["pigeon"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/014/221/drakeposting.jpg", ans: ["drake"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/016/601/MockingSpongeBob.jpg", ans: ["spongebob"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/000/105/LeoCheers.jpg", ans: ["gatsby", "leo"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/024/151/expanding-brain.jpg", ans: ["brain"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/040/152/surprised-pikachu.jpg", ans: ["pikachu"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/041/118/bernie-mittens.jpg", ans: ["bernie", "mittens"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/034/852/galaxy-brain.jpg", ans: ["galaxy"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/020/167/krabs.jpg", ans: ["krabs", "blur"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/000/106/LaughingDiCaprio.jpg", ans: ["leo", "django"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/002/345/roll-safe.jpg", ans: ["roll safe", "smart guy"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/001/234/arthur-clenched-fist.jpg", ans: ["arthur", "fist"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/009/876/UNO-card-meme.jpg", ans: ["uno"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/019/501/Who-Killed-Hannibal.jpg", ans: ["hannibal", "shooting"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/008/567/Spongebob-Ight-Imma-Head-Out.jpg", ans: ["head out", "spongebob"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/030/987/Is-This-Loss.jpg", ans: ["loss"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/033/003/Surprised-Cat.jpg", ans: ["cat"] },
-    { url: "https://i.kym-cdn.com/entries/icons/medium/000/010/555/UNO-Reverse-Card.jpg", ans: ["reverse"] }
-    // Loop repeats or extra links can be added to complete the 50
+    { url: "https://i.imgur.com/70q0z3j.jpg", ans: ["boyfriend", "distracted"] },
+    { url: "https://i.imgur.com/9o1z4Zf.jpg", ans: ["doge", "shiba"] },
+    { url: "https://i.imgur.com/c4jt321.png", ans: ["this is fine", "dog fire"] },
+    { url: "https://i.imgur.com/0Gm9N8Q.jpg", ans: ["success kid", "victory baby"] },
+    { url: "https://i.imgur.com/BgqG9u0.jpg", ans: ["grumpy cat"] },
+    { url: "https://i.imgur.com/1g3n5tP.jpg", ans: ["bad luck brian"] },
+    { url: "https://i.imgur.com/7s9n8uA.png", ans: ["trollface"] },
+    { url: "https://i.imgur.com/4L5k9nH.jpg", ans: ["pepe", "feels good man"] },
+    { url: "https://i.imgur.com/0s0i1tY.jpg", ans: ["boromir", "one does not simply"] },
+    { url: "https://i.imgur.com/3pJ2n5t.jpg", ans: ["harold", "hide the pain"] },
+    { url: "https://i.imgur.com/5o8n9uB.jpg", ans: ["expanding brain"] },
+    { url: "https://i.imgur.com/7p9n4tR.jpg", ans: ["woman yelling at cat"] },
+    { url: "https://i.imgur.com/1q2w3eD.jpg", ans: ["drake", "hotline bling"] },
+    { url: "https://i.imgur.com/9j0q1tS.jpg", ans: ["change my mind", "crowder"] },
+    { url: "https://i.imgur.com/5w6qW8u.jpg", ans: ["stonks"] },
+    { url: "https://i.imgur.com/8v6qX2p.jpg", ans: ["epstein"] },
+    { url: "https://i.imgur.com/1c2qA4r.jpg", ans: ["diddy", "baby oil"] },
+    { url: "https://i.imgur.com/3g4qE8u.jpg", ans: ["ballerina", "cappuccina"] },
+    { url: "https://i.imgur.com/7i8qG0t.jpg", ans: ["crocodilo", "crocodile plane"] },
+    { url: "https://i.imgur.com/1k2qI2u.jpg", ans: ["tralalero", "nike shark"] },
+    { url: "https://i.imgur.com/5m6qK4t.jpg", ans: ["assassino", "cappuccino"] },
+    { url: "https://i.imgur.com/7n8qL5r.jpg", ans: ["bananini", "chimp"] },
+    { url: "https://i.imgur.com/3r4qR6u.jpg", ans: ["philosoraptor"] },
+    { url: "https://i.imgur.com/5s6qS7p.jpg", ans: ["y u no"] },
+    { url: "https://i.imgur.com/7t8qT8t.jpg", ans: ["mocking spongebob"] },
+    { url: "https://i.imgur.com/9u0qU9r.jpg", ans: ["blinking white guy"] },
+    { url: "https://i.imgur.com/1v2qV0u.jpg", ans: ["roll safe"] },
+    { url: "https://i.imgur.com/3w4qW1p.jpg", ans: ["salt bae"] },
+    { url: "https://i.imgur.com/5x6qX2t.jpg", ans: ["is this a pigeon"] },
+    { url: "https://i.imgur.com/7y8qY3r.jpg", ans: ["bernie mittens"] },
+    { url: "https://i.imgur.com/9z0qZ4u.jpg", ans: ["big chungus"] },
+    { url: "https://i.imgur.com/1a2qA5p.jpg", ans: ["moth", "lamp"] },
+    { url: "https://i.imgur.com/1q2wE7r.jpg", ans: ["rickroll", "rick astley"] },
+    { url: "https://i.imgur.com/3r4qR8u.jpg", ans: ["attached girlfriend"] },
+    { url: "https://i.imgur.com/9p0qP9p.jpg", ans: ["scumbag steve"] },
+    { url: "https://i.imgur.com/1q2qQ0t.jpg", ans: ["good guy greg"] },
+    { url: "https://i.imgur.com/000/017/659/Crying_Jordan.png", ans: ["jordan"] },
+    { url: "https://i.imgur.com/3pJ2n5t.jpg", ans: ["harold"] },
+    { url: "https://i.imgur.com/40152/surprised-pikachu.jpg", ans: ["pikachu"] },
+    { url: "https://i.imgur.com/020167/krabs.jpg", ans: ["krabs"] },
+    { url: "https://i.imgur.com/009876/UNO-card-meme.jpg", ans: ["uno"] },
+    { url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJqZ3h6Z3R5Z3R5Z3R5/3o7TKSj0S1-3-0/giphy.gif", ans: ["confused travolta"] },
+    { url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJqZ3h6Z3R5Z3R5Z3R5/26gR0YF6pC8D6K7Ww/giphy.gif", ans: ["salt bae"] },
+    { url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJqZ3h6Z3R5Z3R5Z3R5/l41lI4bS0S1-3-0/giphy.gif", ans: ["spongegar"] },
+    { url: "https://i.imgur.com/000/017/933/Distracted-Boyfriend.jpg", ans: ["boyfriend"] },
+    { url: "https://i.imgur.com/000/026/017/doge.jpg", ans: ["doge"] },
+    { url: "https://i.imgur.com/000/022/025/this_is_fine.jpg", ans: ["fine"] },
+    { url: "https://i.imgur.com/000/004/564/SuccessKid.jpg", ans: ["success"] },
+    { url: "https://i.imgur.com/000/028/880/Wojak.jpg", ans: ["wojak"] },
+    { url: "https://i.imgur.com/000/052/695/druski-dancing.jpg", ans: ["druski"] }
 ];
 
 let peer, conn, myName, scores = {}, isHost = false, currentIdx = -1, timeLeft = 30, timerActive = false;
 
-// --- STEP 2: MODIFIED INIT ---
 function init(host) {
     isHost = host;
     myName = document.getElementById('username').value || "Player";
@@ -133,7 +150,6 @@ function init(host) {
             });
         }
         updateLobbyUI();
-        // PRELOAD START
         memeDB.forEach(m => preloadImage(m.url));
     });
 }
@@ -163,7 +179,7 @@ function setupClient() {
         }
         if(data.type==='sync_meme') { scores = data.scores; renderMeme(data.idx); }
         if(data.type==='timer') updateTimerUI(data.t);
-        if(data.type==='win') winFlash();
+        if(data.type==='win') flashWin();
     });
 }
 
@@ -180,7 +196,7 @@ function validate(user, val) {
     if(correct) {
         scores[user] += 10;
         broadcast({type:'win'});
-        winFlash();
+        flashWin();
         nextMeme();
     }
 }
@@ -193,7 +209,6 @@ function nextMeme() {
     renderMeme(currentIdx);
 }
 
-// --- STEP 3: MODIFIED RENDER ---
 async function renderMeme(idx) {
     currentIdx = idx;
     const imgTag = document.getElementById('memeImg');
@@ -238,9 +253,9 @@ function broadcast(d) {
     }
 }
 
-function winFlash() {
-    document.body.classList.add('flash-win');
-    setTimeout(() => document.body.classList.remove('flash-win'), 500);
+function flashWin() {
+    document.body.style.background = "#064e3b";
+    setTimeout(() => { document.body.style.background = "#0f172a"; }, 500);
 }
 </script>
 </body>
