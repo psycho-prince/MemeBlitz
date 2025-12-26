@@ -4,78 +4,60 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer">
-    <title>MemeBlitz 50 - Final Stable</title>
+    <title>MemeBlitz 2.0 - Fresh Start</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        :root { --primary: #00ff88; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
-        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); text-align: center; margin: 0; padding: 10px; }
-        .container { max-width: 800px; margin: 10px auto; background: var(--card); padding: 25px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
-        .timer-wrap { width: 100%; height: 10px; background: #334155; border-radius: 5px; margin: 10px 0; overflow: hidden; }
-        #timerBar { width: 100%; height: 100%; background: var(--primary); transition: width 1s linear; }
-        .meme-box { min-height: 400px; background: #000; border-radius: 15px; display: flex; align-items: center; justify-content: center; border: 3px solid #334155; }
-        img { max-width: 100%; max-height: 480px; display: none; border-radius: 10px; }
-        input { padding: 15px; width: 85%; border-radius: 10px; border: 2px solid #334155; font-size: 18px; background: #020617; color: white; margin-bottom: 10px; }
-        .btn { padding: 15px 30px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; }
-        .btn-start { background: var(--primary); color: #000; font-size: 20px; width: 100%; margin-top: 20px; }
-        #scoreList { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-top: 20px; }
-        .score-item { background: #334155; padding: 10px; border-radius: 8px; border-left: 5px solid var(--primary); font-size: 14px; text-align: left; }
-        .player-tag { display: inline-block; background: var(--primary); color: #000; padding: 5px 12px; border-radius: 20px; margin: 5px; font-weight: bold; }
+        :root { --primary: #ff4444; --bg: #1a1a2e; --card: #16213e; --text: #e94560; }
+        body { font-family: 'Arial', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; text-align: center; }
+        .container { max-width: 900px; margin: 20px auto; background: var(--card); padding: 20px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.7); }
+        .timer-wrap { width: 100%; height: 15px; background: #0f3460; border-radius: 5px; margin: 10px 0; }
+        #timerBar { height: 100%; background: var(--primary); transition: width 1s linear; }
+        .meme-box { min-height: 450px; background: #000; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin: 15px 0; }
+        img { max-width: 100%; max-height: 500px; border-radius: 8px; }
+        input { padding: 12px; width: 80%; border-radius: 8px; border: 2px solid #0f3460; background: #0f172a; color: var(--text); font-size: 16px; }
+        .btn { padding: 12px 25px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; background: var(--primary); color: #fff; }
+        #scoreList { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 15px; }
+        .score-item { background: #0f3460; padding: 10px; border-radius: 5px; text-align: left; }
         .hidden { display: none; }
     </style>
 </head>
 <body>
-
 <div class="container">
-    <h1 style="color: var(--primary);">MEMEBLITZ 50 ⚡</h1>
-    
+    <h1 style="color: var(--primary);">MEMEBLITZ 2.0 ⚡</h1>
+
     <div id="setupScreen">
-        <input type="text" id="username" placeholder="Nickname">
-        <div style="display:flex; gap:10px; justify-content:center;">
-            <button class="btn" style="background:var(--primary)" onclick="init(true)">CREATE ROOM</button>
-            <button class="btn" style="background:#38bdf8" onclick="init(false)">JOIN ROOM</button>
+        <input type="text" id="username" placeholder="Enter Nickname">
+        <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
+            <button class="btn" onclick="init(true)">Create Room</button>
+            <button class="btn" style="background: #4ecdc4;" onclick="init(false)">Join Room</button>
         </div>
-        <input type="text" id="joinId" placeholder="Room ID" style="margin-top:10px;">
+        <input type="text" id="joinId" placeholder="Room ID" style="margin-top: 10px;">
     </div>
 
     <div id="lobbyScreen" class="hidden">
         <h2 id="roomDisplay">Connecting...</h2>
-        <div id="playerListLobby" style="background: #0f172a; padding: 15px; border-radius: 10px; margin: 20px 0;"></div>
-        <button id="startBtn" class="btn btn-start hidden" onclick="triggerStart()">START GAME 🚀</button>
-        <div id="waitMsg" style="color: var(--primary);">Waiting for Host to start...</div>
+        <div id="playerListLobby" style="margin: 15px 0;"></div>
+        <button id="startBtn" class="btn hidden" onclick="triggerStart()">Start Game 🚀</button>
     </div>
 
     <div id="gameUI" class="hidden">
         <div class="timer-wrap"><div id="timerBar"></div></div>
         <div id="timeText">30s</div>
         <div class="meme-box">
-            <div id="loader">⚡ PRE-LOADING...</div>
-            <img id="memeImg" src="">
+            <img id="memeImg" src="" alt="Meme Image">
+            <div id="loader" style="color: var(--primary);">Loading...</div>
         </div>
-        <input type="text" id="guessInput" placeholder="TYPE ANSWER!" onkeyup="if(event.key==='Enter') sendGuess()">
+        <input type="text" id="guessInput" placeholder="Guess the Meme!" onkeyup="if(event.key==='Enter') sendGuess()">
         <div id="hostControls" class="hidden">
-            <button class="btn" style="background:#fbbf24; width:100%" onclick="nextMeme()">SKIP ⏭️</button>
+            <button class="btn" style="background: #f7b731;" onclick="nextMeme()">Skip ⏭️</button>
         </div>
         <div id="scoreList"></div>
     </div>
 </div>
 
 <script>
-const imageCache = new Map();
-function preloadImage(url) {
-    if (imageCache.has(url)) return imageCache.get(url);
-    const img = new Image();
-    const promise = new Promise(resolve => {
-        img.onload = () => resolve(img);
-        img.onerror = () => resolve(img);
-        img.src = url;
-    });
-    imageCache.set(url, promise);
-    return promise;
-}
-
-// 50 ACTUAL WORKING DIRECT LINKS
 const memeDB = [
-    { url: "https://i.imgur.com/70q0z3j.jpg", ans: ["boyfriend", "distracted"] },
+    { url: "https://i.imgur.com/R1qZ2bD.jpeg", ans: ["boyfriend", "distracted"] },
     { url: "https://i.imgur.com/9o1z4Zf.jpg", ans: ["doge", "shiba"] },
     { url: "https://i.imgur.com/c4jt321.png", ans: ["this is fine", "dog fire"] },
     { url: "https://i.imgur.com/0Gm9N8Q.jpg", ans: ["success kid", "victory baby"] },
@@ -90,7 +72,7 @@ const memeDB = [
     { url: "https://i.imgur.com/1q2w3eD.jpg", ans: ["drake", "hotline bling"] },
     { url: "https://i.imgur.com/9j0q1tS.jpg", ans: ["change my mind", "crowder"] },
     { url: "https://i.imgur.com/5w6qW8u.jpg", ans: ["stonks"] },
-    { url: "https://i.imgur.com/8v6qX2p.jpg", ans: ["epstein"] },
+    { url: "https://knowyourmeme.com/photos/1817561-epstein-didnt-kill-himself", ans: ["epstein"] },
     { url: "https://i.imgur.com/1c2qA4r.jpg", ans: ["diddy", "baby oil"] },
     { url: "https://i.imgur.com/3g4qE8u.jpg", ans: ["ballerina", "cappuccina"] },
     { url: "https://i.imgur.com/7i8qG0t.jpg", ans: ["crocodilo", "crocodile plane"] },
@@ -111,80 +93,86 @@ const memeDB = [
     { url: "https://i.imgur.com/3r4qR8u.jpg", ans: ["attached girlfriend"] },
     { url: "https://i.imgur.com/9p0qP9p.jpg", ans: ["scumbag steve"] },
     { url: "https://i.imgur.com/1q2qQ0t.jpg", ans: ["good guy greg"] },
-    { url: "https://i.imgur.com/000/017/659/Crying_Jordan.png", ans: ["jordan"] },
-    { url: "https://i.imgur.com/3pJ2n5t.jpg", ans: ["harold"] },
-    { url: "https://i.imgur.com/40152/surprised-pikachu.jpg", ans: ["pikachu"] },
-    { url: "https://i.imgur.com/020167/krabs.jpg", ans: ["krabs"] },
-    { url: "https://i.imgur.com/009876/UNO-card-meme.jpg", ans: ["uno"] },
-    { url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJqZ3h6Z3R5Z3R5Z3R5/3o7TKSj0S1-3-0/giphy.gif", ans: ["confused travolta"] },
-    { url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJqZ3h6Z3R5Z3R5Z3R5/26gR0YF6pC8D6K7Ww/giphy.gif", ans: ["salt bae"] },
-    { url: "https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHJqZ3h6Z3R5Z3R5Z3R5/l41lI4bS0S1-3-0/giphy.gif", ans: ["spongegar"] },
-    { url: "https://i.imgur.com/000/017/933/Distracted-Boyfriend.jpg", ans: ["boyfriend"] },
-    { url: "https://i.imgur.com/000/026/017/doge.jpg", ans: ["doge"] },
-    { url: "https://i.imgur.com/000/022/025/this_is_fine.jpg", ans: ["fine"] },
-    { url: "https://i.imgur.com/000/004/564/SuccessKid.jpg", ans: ["success"] },
-    { url: "https://i.imgur.com/000/028/880/Wojak.jpg", ans: ["wojak"] },
-    { url: "https://i.imgur.com/000/052/695/druski-dancing.jpg", ans: ["druski"] }
+    { url: "https://i.imgur.com/Crying_Jordan.png", ans: ["jordan"] },
+    { url: "https://i.imgur.com/surprised-pikachu.jpg", ans: ["pikachu"] },
+    { url: "https://i.imgur.com/krabs.jpg", ans: ["krabs"] },
+    { url: "https://i.imgur.com/UNO-card-meme.jpg", ans: ["uno"] },
+    { url: "https://media.giphy.com/media/3o7TKSj0S1-3-0/giphy.gif", ans: ["confused travolta"] },
+    { url: "https://media.giphy.com/media/26gR0YF6pC8D6K7Ww/giphy.gif", ans: ["salt bae"] },
+    { url: "https://media.giphy.com/media/l41lI4bS0S1-3-0/giphy.gif", ans: ["spongegar"] },
+    { url: "https://i.imgur.com/R1qZ2bD.jpeg", ans: ["boyfriend"] },
+    { url: "https://i.imgur.com/9o1z4Zf.jpg", ans: ["doge"] },
+    { url: "https://i.imgur.com/c4jt321.png", ans: ["fine"] },
+    { url: "https://i.imgur.com/0Gm9N8Q.jpg", ans: ["success"] },
+    { url: "https://i.imgur.com/Wojak.jpg", ans: ["wojak"] },
+    { url: "https://i.imgur.com/druski-dancing.jpg", ans: ["druski"] }
 ];
 
 let peer, conn, myName, scores = {}, isHost = false, currentIdx = -1, timeLeft = 30, timerActive = false;
 
 function init(host) {
     isHost = host;
-    myName = document.getElementById('username').value || "Player";
+    myName = document.getElementById('username').value.trim() || `Player${Math.floor(Math.random() * 1000)}`;
     peer = new Peer();
     peer.on('open', id => {
         document.getElementById('setupScreen').classList.add('hidden');
         document.getElementById('lobbyScreen').classList.remove('hidden');
-        if(isHost) {
+        document.getElementById('roomDisplay').textContent = isHost ? `ROOM ID: ${id}` : 'Joining Room...';
+        if (isHost) {
             scores[myName] = 0;
-            document.getElementById('roomDisplay').innerText = "ROOM ID: " + id;
             document.getElementById('startBtn').classList.remove('hidden');
-            document.getElementById('waitMsg').classList.add('hidden');
             setupHost();
         } else {
             conn = peer.connect(document.getElementById('joinId').value);
             conn.on('open', () => {
-                conn.send({type:'join', name:myName});
+                conn.send({ type: 'join', name: myName });
                 setupClient();
             });
         }
         updateLobbyUI();
-        memeDB.forEach(m => preloadImage(m.url));
+        preloadImages();
+    });
+    peer.on('error', err => console.log('Peer error:', err));
+}
+
+function preloadImages() {
+    memeDB.forEach(m => {
+        const img = new Image();
+        img.src = m.url;
     });
 }
 
 function setupHost() {
     peer.on('connection', c => {
         c.on('data', data => {
-            if(data.type==='join') { scores[data.name] = 0; broadcast({type:'sync_lobby', scores}); updateLobbyUI(); }
-            if(data.type==='guess') validate(data.name, data.val);
+            if (data.type === 'join') { scores[data.name] = 0; broadcast({ type: 'sync_lobby', scores }); }
+            if (data.type === 'guess') validate(data.name, data.val);
         });
     });
     setInterval(() => {
-        if(!isHost || !timerActive) return;
+        if (!isHost || !timerActive) return;
         timeLeft--;
-        if(timeLeft <= 0) nextMeme();
-        broadcast({type:'timer', t:timeLeft});
-        updateTimerUI(timeLeft);
+        if (timeLeft <= 0) nextMeme();
+        broadcast({ type: 'timer', t: timeLeft });
+        updateTimerUI();
     }, 1000);
 }
 
 function setupClient() {
     conn.on('data', data => {
-        if(data.type==='sync_lobby') { scores = data.scores; updateLobbyUI(); }
-        if(data.type==='start_game') { 
+        if (data.type === 'sync_lobby') { scores = data.scores; updateLobbyUI(); }
+        if (data.type === 'start_game') {
             document.getElementById('lobbyScreen').classList.add('hidden');
             document.getElementById('gameUI').classList.remove('hidden');
         }
-        if(data.type==='sync_meme') { scores = data.scores; renderMeme(data.idx); }
-        if(data.type==='timer') updateTimerUI(data.t);
-        if(data.type==='win') flashWin();
+        if (data.type === 'sync_meme') { scores = data.scores; renderMeme(data.idx); }
+        if (data.type === 'timer') { timeLeft = data.t; updateTimerUI(); }
+        if (data.type === 'win') flashWin();
     });
 }
 
 function triggerStart() {
-    broadcast({type:'start_game'});
+    broadcast({ type: 'start_game' });
     document.getElementById('lobbyScreen').classList.add('hidden');
     document.getElementById('gameUI').classList.remove('hidden');
     document.getElementById('hostControls').classList.remove('hidden');
@@ -192,10 +180,11 @@ function triggerStart() {
 }
 
 function validate(user, val) {
-    const correct = memeDB[currentIdx].ans.some(a => val.toLowerCase().includes(a));
-    if(correct) {
-        scores[user] += 10;
-        broadcast({type:'win'});
+    const guess = val.toLowerCase().trim();
+    const correct = memeDB[currentIdx]?.ans.some(ans => guess.includes(ans));
+    if (correct) {
+        scores[user] = (scores[user] || 0) + 10;
+        broadcast({ type: 'win' });
         flashWin();
         nextMeme();
     }
@@ -205,59 +194,64 @@ function nextMeme() {
     timerActive = false;
     currentIdx = Math.floor(Math.random() * memeDB.length);
     timeLeft = 30;
-    broadcast({type:'sync_meme', scores, idx:currentIdx});
+    broadcast({ type: 'sync_meme', scores, idx: currentIdx });
     renderMeme(currentIdx);
 }
 
-async function renderMeme(idx) {
+function renderMeme(idx) {
     currentIdx = idx;
-    const imgTag = document.getElementById('memeImg');
+    const img = document.getElementById('memeImg');
     const loader = document.getElementById('loader');
     loader.style.display = 'block';
-    imgTag.style.display = 'none';
-
-    const img = await preloadImage(memeDB[idx].url);
-    imgTag.src = img.src;
-    loader.style.display = 'none';
-    imgTag.style.display = 'block';
-
+    img.style.display = 'none';
+    img.onload = () => {
+        loader.style.display = 'none';
+        img.style.display = 'block';
+    };
+    img.onerror = () => {
+        loader.textContent = 'Image failed to load! Skipping...';
+        setTimeout(nextMeme, 2000);
+    };
+    img.src = memeDB[idx].url;
     if (isHost) timerActive = true;
-    document.getElementById('guessInput').value = "";
+    document.getElementById('guessInput').value = '';
     document.getElementById('guessInput').focus();
     updateScoreUI();
 }
 
 function sendGuess() {
     const val = document.getElementById('guessInput').value;
-    if(isHost) validate(myName, val);
-    else conn.send({type:'guess', name:myName, val:val});
+    if (!val) return;
+    if (isHost) validate(myName, val);
+    else conn.send({ type: 'guess', name: myName, val });
 }
 
-function updateTimerUI(t) {
-    document.getElementById('timerBar').style.width = (t/30)*100 + "%";
-    document.getElementById('timeText').innerText = t + "s";
+function updateTimerUI() {
+    document.getElementById('timerBar').style.width = (timeLeft / 30) * 100 + '%';
+    document.getElementById('timeText').textContent = `${timeLeft}s`;
 }
 
 function updateLobbyUI() {
-    document.getElementById('playerListLobby').innerHTML = Object.keys(scores).map(n => `<span class="player-tag">${n}</span>`).join('');
+    document.getElementById('playerListLobby').innerHTML = Object.keys(scores)
+        .map(name => `<span style="background: var(--primary); color: #fff; padding: 5px 10px; border-radius: 10px; margin: 5px;">${name}</span>`).join('');
 }
 
 function updateScoreUI() {
     document.getElementById('scoreList').innerHTML = Object.entries(scores)
-        .sort((a,b)=>b[1]-a[1]).map(([n,s])=>`<div class="score-item"><b>${n}</b>: ${s}</div>`).join('');
+        .sort((a, b) => b[1] - a[1])
+        .map(([name, score]) => `<div class="score-item"><b>${name}</b>: ${score}</div>`).join('');
 }
 
-function broadcast(d) {
-    if(peer.connections) {
-        Object.values(peer.connections).forEach(conns => conns.forEach(c => c.send(d)));
+function broadcast(data) {
+    if (peer.connections) {
+        Object.values(peer.connections).forEach(conns => conns.forEach(c => c.send(data)));
     }
 }
 
 function flashWin() {
-    document.body.style.background = "#064e3b";
-    setTimeout(() => { document.body.style.background = "#0f172a"; }, 500);
+    document.body.style.background = '#ffcccc';
+    setTimeout(() => { document.body.style.background = var(--bg); }, 500);
 }
 </script>
 </body>
 </html>
-
