@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MemeBlitz - Speed Guessing</title>
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        :root { --primary: #ff4757; --secondary: #2f3542; --light: #f1f2f6; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--secondary); color: white; text-align: center; margin: 0; padding: 20px; }
+        .container { max-width: 600px; margin: auto; background: #3f4452; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        img { max-width: 100%; border-radius: 10px; margin-bottom: 20px; border: 4px solid var(--primary); display: none; }
+        input { padding: 12px; border-radius: 5px; border: none; width: 70%; font-size: 16px; margin-top: 10px; }
+        button { padding: 12px 20px; border-radius: 5px; border: none; background: var(--primary); color: white; cursor: pointer; font-weight: bold; margin: 5px; }
+        .hidden { display: none; }
+        #status { color: #ffa502; margin-top: 10px; font-style: italic; }
+        #leaderboard { margin-top: 20px; text-align: left; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🖼️ MemeBlitz</h1>
+    
+    <div id="lobby">
+        <input type="text" id="username" placeholder="Enter Your Name"><br>
+        <button onclick="createRoom()">Create Room (Host)</button>
+        <hr>
+        <input type="text" id="joinId" placeholder="Enter Room ID">
+        <button onclick="joinRoom()">Join Friend</button>
+        <p id="status"></p>
+    </div>
+
+    <div id="game" class="hidden">
+        <h3 id="roomDisplay"></h3>
+        <img id="memeImage" src="" alt="Guess the Meme">
+        <div id="gameControls">
+            <input type="text" id="guessInput" placeholder="Type your guess here..." onkeyup="checkEnter(event)">
+            <button onclick="submitGuess()">Submit</button>
+        </div>
+        <div id="hostControls" class="hidden">
+            <button onclick="nextMeme()" style="background: #2ed573;">Next Meme (Host Only)</button>
+        </div>
+        <div id="leaderboard">
+            <strong>Scores:</strong>
+            <div id="scoreList"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+// --- GAME DATA ---
+const memes = [
+    { url: "https://i.imgur.com/B7v6v2J.jpeg", answers: ["egg", "world record egg", "instagram egg"] },
+    { url: "https://i.imgur.com/8N697Xp.jpeg", answers: ["distracted boyfriend", "boyfriend"] },
+    { url: "https://i.imgur.com/mO2O6wW.jpeg", answers: ["woman yelling at cat", "cat meme", "smudge"] },
+    { url: "https://i.imgur.com/39wYp9T.jpeg", answers: ["manavalan", "salim kumar", "pulival kalyanam"] },
+    { url: "https://i.imgur.com/8S1vGid.jpeg", answers: ["nesamani", "contractor nesamani", "friends"] }
+];
+
+let peer, conn, myName, roomId;
+let isHost = false;
+let currentMemeIndex = -1;
+let scores = {};
+
+// --- MULTIPLAYER LOGIC ---
+function createRoom() {
+    myName = document.getElementById('username').value || "Player";
+    peer = new Peer();
+    peer.on('open', (id) => {
+        roomId = id;
+        isHost = true;
+        showGame(`Room ID: ${id} (Share this with friends!)`);
+        document.getElementById('hostControls').classList.remove('hidden');
+        setupHostListeners();
+    });
+}
+
+function joinRoom() {
+    const targetId = document.getElementById('joinId').value;
+    myName = document.getElementById('username').value || "Guest";
+    peer = new Peer();
+    peer.on('open', () => {
+        conn = peer.connect(targetId);
+        conn.on('open', () => {
+            conn.send({ type: 'join', name: myName });
+            showGame("Connected to Room!");
+            setupClientListeners();
+        });
+    });
+}
+
+function setupHostListeners() {
+    peer.on('connection', (c) => {
+        c.on('data', (data) => {
+            if (data.type === 'join') {
+                scores[data.name] = 0;
+                updateScoreboard();
+                broadcast({ type: 'updateScores', scores });
+            }
+            if (data.type === 'guess') handleGuess(data.name, data.text);
+        });
+    });
+}
+
+function setupClientListeners() {
+    conn.on('data', (data) => {
+        if (data.type === 'newMeme') {
+            currentMemeIndex = data.index;
+            const img = document.getElementById('memeImage');
+            img.src = memes[currentMemeIndex].url;
+            img.style.display = "block";
+            document.getElementById('guessInput').value = "";
+        }
+        if (data.type === 'updateScores') {
+            scores = data.scores;
+            updateScoreboard();
+        }
+    });
+}
+
+// --- GAMEPLAY LOGIC ---
+function nextMeme() {
+    currentMemeIndex++;
+    if(currentMemeIndex >= memes.length) currentMemeIndex = 0;
+    broadcast({ type: 'newMeme', index: currentMemeIndex });
+    // Host also needs to see it
+    const img = document.getElementById('memeImage');
+    img.src = memes[currentMemeIndex].url;
+    img.style.display = "block";
+    document.getElementById('guessInput').value = "";
+}
+
+function handleGuess(player, text) {
+    const correct = memes[currentMemeIndex].answers.includes(text.toLowerCase().trim());
+    if (correct) {
+        scores[player] = (scores[player] || 0) + 10;
+        updateScoreboard();
+        broadcast({ type: 'updateScores', scores });
+        alert(player + " Got it!");
+        nextMeme();
+    }
+}
+
+function submitGuess() {
+    const val = document.getElementById('guessInput').value;
+    if (isHost) handleGuess(myName, val);
+    else conn.send({ type: 'guess', name: myName, text: val });
+}
+
+function showGame(msg) {
+    document.getElementById('lobby').classList.add('hidden');
+    document.getElementById('game').classList.remove('hidden');
+    document.getElementById('roomDisplay').innerText = msg;
+    scores[myName] = 0;
+    updateScoreboard();
+}
+
+function updateScoreboard() {
+    const list = document.getElementById('scoreList');
+    list.innerHTML = Object.entries(scores)
+        .sort((a,b) => b[1] - a[1])
+        .map(([name, score]) => `<div>${name}: ${score} pts</div>`).join('');
+}
+
+function broadcast(data) {
+    // Host sends data to all connected peers
+    Object.values(peer.connections).forEach(conns => {
+        conns.forEach(c => c.send(data));
+    });
+}
+
+function checkEnter(e) { if (e.key === "Enter") submitGuess(); }
+
+</script>
+</body>
+</html>
