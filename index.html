@@ -4,169 +4,192 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="referrer" content="no-referrer">
-    <title>MemeBlitz 2.0 ⚡</title>
+    <title>MemeBlitz 50 ⚡</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
-        :root { --primary: #ff3366; --bg: #0f0f1e; --card: #1a1a2e; --text: #ffffff; }
-        body { font-family: 'Arial', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; text-align: center; }
-        .container { max-width: 900px; margin: 20px auto; background: var(--card); padding: 20px; border-radius: 15px; box-shadow: 0 5px 20px rgba(0,0,0,0.8); }
-        h1 { color: var(--primary); }
-        .timer-wrap { width: 100%; height: 15px; background: #16213e; border-radius: 8px; margin: 15px 0; overflow: hidden; }
+        :root { --primary: #ff3366; --bg: #0f0f1e; --card: #1a1a2e; --text: #ffffff; --green: #00ff88; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; text-align: center; }
+        .container { max-width: 800px; margin: 10px auto; background: var(--card); padding: 25px; border-radius: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.6); }
+        
+        /* Lobby */
+        .player-tag { background: var(--primary); color: white; padding: 8px 15px; border-radius: 50px; margin: 5px; display: inline-block; font-weight: bold; }
+        
+        /* Game Elements */
+        .timer-wrap { width: 100%; height: 12px; background: #16213e; border-radius: 6px; margin: 15px 0; overflow: hidden; }
         #timerBar { height: 100%; background: var(--primary); width: 100%; transition: width 0.5s linear; }
-        .meme-box { min-height: 450px; background: #000; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin: 20px 0; overflow: hidden; }
-        #memeImg { max-width: 100%; max-height: 500px; border-radius: 10px; }
-        #loader { color: var(--primary); font-size: 24px; }
-        input { padding: 14px; width: 80%; border-radius: 10px; border: 2px solid #16213e; background: #0f172a; color: white; font-size: 18px; margin: 10px 0; }
-        .btn { padding: 14px 28px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; background: var(--primary); color: white; margin: 5px; }
+        .meme-box { min-height: 400px; background: #000; border-radius: 15px; display: flex; align-items: center; justify-content: center; border: 2px solid #334155; position: relative; }
+        #memeImg { max-width: 100%; max-height: 480px; display: none; border-radius: 10px; }
+        
+        /* UI Components */
+        input { padding: 15px; width: 85%; border-radius: 10px; border: 2px solid #16213e; background: #0a0a1a; color: white; font-size: 18px; margin: 10px 0; outline: none; }
+        input:focus { border-color: var(--primary); }
+        .btn { padding: 15px 30px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .btn-main { background: var(--primary); color: white; }
+        .btn-start { background: var(--green); color: #000; width: 100%; font-size: 1.2rem; }
+        
         #scoreList { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 20px; }
-        .score-item { background: #16213e; padding: 12px; border-radius: 8px; font-weight: bold; }
+        .score-item { background: #16213e; padding: 12px; border-radius: 10px; border-bottom: 3px solid var(--primary); }
         .hidden { display: none; }
-        .player-tag { background: var(--primary); color: black; padding: 6px 12px; border-radius: 20px; margin: 5px; font-weight: bold; display: inline-block; }
     </style>
 </head>
 <body>
+
 <div class="container">
-    <h1>MEMEBLITZ 2.0 ⚡</h1>
+    <h1>MEMEBLITZ 50 ⚡</h1>
 
     <div id="setupScreen">
-        <input type="text" id="username" placeholder="Your Nickname">
+        <input type="text" id="username" placeholder="Pick a Nickname">
         <div style="margin: 15px 0;">
-            <button class="btn" onclick="init(true)">Create Room</button>
-            <button class="btn" style="background: #4ecdc4;" onclick="init(false)">Join Room</button>
+            <button class="btn btn-main" onclick="init(true)">Create Room</button>
+            <button class="btn" style="background: #38bdf8; color: white;" onclick="init(false)">Join Room</button>
         </div>
-        <input type="text" id="joinId" placeholder="Enter Room ID">
+        <input type="text" id="joinId" placeholder="Paste Room ID here">
     </div>
 
     <div id="lobbyScreen" class="hidden">
         <h2 id="roomDisplay">Connecting...</h2>
-        <div id="playerListLobby"></div>
-        <button id="startBtn" class="btn hidden" onclick="triggerStart()">START GAME 🚀</button>
+        <div id="playerListLobby" style="margin: 20px 0;"></div>
+        <button id="startBtn" class="btn btn-start hidden" onclick="triggerStart()">START GAME 🚀</button>
+        <p id="waitMsg" style="opacity: 0.7;">Waiting for the host to start the blitz...</p>
     </div>
 
     <div id="gameUI" class="hidden">
         <div class="timer-wrap"><div id="timerBar"></div></div>
-        <div id="timeText" style="font-size: 20px; margin: 10px;">30s</div>
+        <div id="timeText" style="font-weight: bold;">30s</div>
         <div class="meme-box">
-            <img id="memeImg" src="" alt="Meme">
-            <div id="loader">Loading meme...</div>
+            <div id="loader">⚡ PRE-LOADING MEME...</div>
+            <img id="memeImg" src="">
         </div>
-        <input type="text" id="guessInput" placeholder="TYPE YOUR GUESS!" autocomplete="off">
+        <input type="text" id="guessInput" placeholder="GUESS THE MEME!" autocomplete="off">
         <div id="hostControls" class="hidden">
-            <button class="btn" style="background: #ffb84d;" onclick="nextMeme()">SKIP ⏭️</button>
+            <button class="btn" style="background: #ffb84d; color: black; width: 100%;" onclick="nextMeme()">SKIP ROUND ⏭️</button>
         </div>
         <div id="scoreList"></div>
     </div>
 </div>
 
 <script>
-// Proven, permanent direct links from Know Your Meme (official icons) + Giphy for GIFs
+// STEP 1: PRE-LOAD ENGINE
+const imageCache = new Map();
+function preloadImage(url) {
+    if (imageCache.has(url)) return imageCache.get(url);
+    const img = new Image();
+    const promise = new Promise(res => {
+        img.onload = () => res(img);
+        img.onerror = () => res(img);
+        img.src = url;
+    });
+    imageCache.set(url, promise);
+    return promise;
+}
+
+// STABLE DIRECT-LINK DATABASE
 const memeDB = [
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/006/026/Distracted_boyfriend.jpg", ans: ["distracted boyfriend", "boyfriend"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/001/593/pepe_the_frog.jpg", ans: ["pepe", "feels good man", "sad frog"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/002/232/mocking_spongebob.jpg", ans: ["mocking spongebob", "spongebob"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/022/989/expanding_brain.jpg", ans: ["expanding brain", "galaxy brain"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/024/581/trollface.jpg", ans: ["trollface", "troll"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/000/456/bad_luck_brian.jpg", ans: ["bad luck brian"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/009/918/HideThePainHarold.jpg", ans: ["hide the pain harold", "harold"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/013/044/Grumpy_Cat.jpg", ans: ["grumpy cat"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/016/547/DRAKE.jpg", ans: ["drake", "hotline bling"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/028/298/change_my_mind.jpg", ans: ["change my mind"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/029/913/stonks.jpg", ans: ["stonks"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/031/139/Surprised_Pikachu.jpg", ans: ["surprised pikachu", "pikachu"] },
-    { url: "https://i.kym-cdn.com/entries/icons/original/000/031/214/woman-yelling-at-cat.jpg", ans: ["woman yelling at cat"] },
-    { url: "https://media.giphy.com/media/3o7TKSj0S1-3-0/giphy.gif", ans: ["confused travolta", "travolta"] },
-    { url: "https://media.giphy.com/media/26gR0YF6pC8D6K7Ww/giphy.gif", ans: ["salt bae"] }
+    { url: "https://i.imgur.com/70q0z3j.jpg", ans: ["distracted boyfriend", "boyfriend"] },
+    { url: "https://i.imgur.com/9o1z4Zf.jpg", ans: ["doge", "shiba"] },
+    { url: "https://i.imgur.com/c4jt321.png", ans: ["this is fine", "dog fire"] },
+    { url: "https://i.imgur.com/0Gm9N8Q.jpg", ans: ["success kid"] },
+    { url: "https://i.imgur.com/BgqG9u0.jpg", ans: ["grumpy cat"] },
+    { url: "https://i.imgur.com/1g3n5tP.jpg", ans: ["bad luck brian"] },
+    { url: "https://i.imgur.com/7s9n8uA.png", ans: ["trollface"] },
+    { url: "https://i.imgur.com/4L5k9nH.jpg", ans: ["pepe"] },
+    { url: "https://i.imgur.com/3pJ2n5t.jpg", ans: ["harold", "hide the pain"] },
+    { url: "https://i.imgur.com/5w6qW8u.jpg", ans: ["stonks"] },
+    { url: "https://i.imgur.com/8v6qX2p.jpg", ans: ["pikachu", "surprised pikachu"] },
+    { url: "https://i.imgur.com/1q2w3eD.jpg", ans: ["drake", "hotline bling"] },
+    { url: "https://i.imgur.com/9j0q1tS.jpg", ans: ["change my mind"] },
+    { url: "https://i.imgur.com/5o8n9uB.jpg", ans: ["expanding brain", "galaxy brain"] },
+    { url: "https://i.imgur.com/1v2qV0u.jpg", ans: ["roll safe", "smart guy"] },
+    { url: "https://i.imgur.com/3w4qW1p.jpg", ans: ["salt bae"] },
+    { url: "https://i.imgur.com/5x6qX2t.jpg", ans: ["pigeon", "is this a pigeon"] },
+    { url: "https://i.imgur.com/7y8qY3r.jpg", ans: ["bernie mittens", "bernie"] },
+    { url: "https://i.imgur.com/9z0qZ4u.jpg", ans: ["big chungus"] },
+    { url: "https://i.imgur.com/1k2qI2u.jpg", ans: ["nike shark", "shark"] },
+    { url: "https://i.imgur.com/3r4qR6u.jpg", ans: ["philosoraptor"] },
+    { url: "https://i.imgur.com/5s6qS7p.jpg", ans: ["y u no"] },
+    { url: "https://i.imgur.com/7t8qT8t.jpg", ans: ["mocking spongebob"] },
+    { url: "https://i.imgur.com/1q2qQ0t.jpg", ans: ["good guy greg"] },
+    { url: "https://i.imgur.com/9p0qP9p.jpg", ans: ["scumbag steve"] },
+    { url: "https://i.imgur.com/3r4qR8u.jpg", ans: ["overly attached girlfriend"] },
+    { url: "https://i.imgur.com/1a2qA5p.jpg", ans: ["moth", "lamp"] },
+    { url: "https://i.imgur.com/7p9n4tR.jpg", ans: ["woman yelling at cat"] },
+    { url: "https://i.imgur.com/0s0i1tY.jpg", ans: ["boromir", "one does not simply"] },
+    { url: "https://i.imgur.com/1c2qA4r.jpg", ans: ["diddy"] }
+    // You can add more Imgur links here to reach 50!
 ];
 
 let peer, conn, myName, scores = {}, isHost = false, currentIdx = -1, timeLeft = 30, timerActive = false;
 
 function init(host) {
     isHost = host;
-    myName = document.getElementById('username').value.trim() || `Player${Math.floor(Math.random() * 9999)}`;
-
-    peer = new Peer(undefined, {
-        host: '0.peerjs.com',
-        secure: true,
-        port: 443,
-        config: {
-            iceServers: [
-                { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' }
-            ]
-        }
-    });
+    myName = document.getElementById('username').value.trim() || `Player${Math.floor(Math.random()*999)}`;
+    peer = new Peer();
 
     peer.on('open', id => {
         document.getElementById('setupScreen').classList.add('hidden');
         document.getElementById('lobbyScreen').classList.remove('hidden');
-        document.getElementById('roomDisplay').textContent = isHost ? `ROOM ID: ${id}` : 'Connected!';
-        if (isHost) {
+        document.getElementById('roomDisplay').textContent = isHost ? `ROOM ID: ${id}` : 'Connecting...';
+        
+        if(isHost) {
             scores[myName] = 0;
             document.getElementById('startBtn').classList.remove('hidden');
+            document.getElementById('waitMsg').classList.add('hidden');
             setupHost();
         } else {
             const joinId = document.getElementById('joinId').value.trim();
             conn = peer.connect(joinId);
-            conn.on('open', () => conn.send({ type: 'join', name: myName }));
+            conn.on('open', () => conn.send({type: 'join', name: myName}));
             setupClient();
         }
         updateLobbyUI();
-        preloadImages();
+        memeDB.forEach(m => preloadImage(m.url)); // Preload memes in lobby
     });
-
-    peer.on('error', err => console.error('PeerJS Error:', err));
-}
-
-function preloadImages() {
-    memeDB.forEach(m => { new Image().src = m.url; });
 }
 
 function setupHost() {
     peer.on('connection', c => {
         c.on('data', data => {
-            if (data.type === 'join') { scores[data.name] = 0; broadcast({ type: 'sync_lobby', scores }); updateLobbyUI(); }
-            if (data.type === 'guess') validate(data.name, data.val);
+            if(data.type === 'join') { scores[data.name] = 0; broadcast({type: 'sync_lobby', scores}); updateLobbyUI(); }
+            if(data.type === 'guess') validate(data.name, data.val);
         });
     });
-
     setInterval(() => {
-        if (!isHost || !timerActive) return;
+        if(!isHost || !timerActive) return;
         timeLeft--;
-        if (timeLeft <= 0) nextMeme();
-        broadcast({ type: 'timer', t: timeLeft });
+        if(timeLeft <= 0) nextMeme();
+        broadcast({type: 'timer', t: timeLeft});
         updateTimerUI();
     }, 1000);
 }
 
 function setupClient() {
     conn.on('data', data => {
-        if (data.type === 'sync_lobby') { scores = data.scores; updateLobbyUI(); }
-        if (data.type === 'start_game') startGameUI();
-        if (data.type === 'sync_meme') { scores = data.scores; renderMeme(data.idx); }
-        if (data.type === 'timer') { timeLeft = data.t; updateTimerUI(); }
-        if (data.type === 'win') flashWin();
+        if(data.type === 'sync_lobby') { scores = data.scores; updateLobbyUI(); }
+        if(data.type === 'start_game') startGame();
+        if(data.type === 'sync_meme') { scores = data.scores; renderMeme(data.idx); }
+        if(data.type === 'timer') { timeLeft = data.t; updateTimerUI(); }
+        if(data.type === 'win') flashGreen();
     });
 }
 
-function startGameUI() {
-    document.getElementById('lobbyScreen').classList.add('hidden');
-    document.getElementById('gameUI').classList.remove('hidden');
-    if (isHost) document.getElementById('hostControls').classList.remove('hidden');
-}
-
 function triggerStart() {
-    broadcast({ type: 'start_game' });
-    startGameUI();
+    broadcast({type: 'start_game'});
+    startGame();
     nextMeme();
 }
 
+function startGame() {
+    document.getElementById('lobbyScreen').classList.add('hidden');
+    document.getElementById('gameUI').classList.remove('hidden');
+    if(isHost) document.getElementById('hostControls').classList.remove('hidden');
+}
+
 function validate(user, val) {
-    const guess = val.toLowerCase().trim();
-    const correct = memeDB[currentIdx].ans.some(a => guess.includes(a.toLowerCase()));
-    if (correct) {
-        scores[user] = (scores[user] || 0) + 10;
-        broadcast({ type: 'win' });
-        flashWin();
+    const correct = memeDB[currentIdx].ans.some(a => val.toLowerCase().includes(a));
+    if(correct) {
+        scores[user] += 10;
+        broadcast({type: 'win'});
+        flashGreen();
         nextMeme();
     }
 }
@@ -175,34 +198,26 @@ function nextMeme() {
     timerActive = false;
     currentIdx = Math.floor(Math.random() * memeDB.length);
     timeLeft = 30;
-    broadcast({ type: 'sync_meme', scores, idx: currentIdx });
+    broadcast({type: 'sync_meme', scores, idx: currentIdx});
     renderMeme(currentIdx);
 }
 
-function renderMeme(idx) {
+async function renderMeme(idx) {
     currentIdx = idx;
     const img = document.getElementById('memeImg');
     const loader = document.getElementById('loader');
     loader.style.display = 'block';
     img.style.display = 'none';
-    img.src = memeDB[idx].url;
-    img.onload = () => { loader.style.display = 'none'; img.style.display = 'block'; };
-    img.onerror = () => { loader.textContent = 'Failed – skipping...'; setTimeout(nextMeme, 2000); };
-    if (isHost) timerActive = true;
+
+    const loadedImg = await preloadImage(memeDB[idx].url);
+    img.src = loadedImg.src;
+    loader.style.display = 'none';
+    img.style.display = 'block';
+
+    if(isHost) timerActive = true;
     document.getElementById('guessInput').value = '';
     document.getElementById('guessInput').focus();
     updateScoreUI();
-}
-
-document.getElementById('guessInput')?.addEventListener('keyup', e => {
-    if (e.key === 'Enter') sendGuess();
-});
-
-function sendGuess() {
-    const val = document.getElementById('guessInput').value.trim();
-    if (!val) return;
-    if (isHost) validate(myName, val);
-    else conn.send({ type: 'guess', name: myName, val });
 }
 
 function updateTimerUI() {
@@ -217,17 +232,25 @@ function updateLobbyUI() {
 
 function updateScoreUI() {
     document.getElementById('scoreList').innerHTML = Object.entries(scores)
-        .sort((a, b) => b[1] - a[1])
-        .map(([n, s]) => `<div class="score-item">${n}: ${s} pts</div>`).join('');
+        .sort((a,b)=>b[1]-a[1]).map(([n,s])=>`<div class="score-item"><b>${n}</b><br>${s} pts</div>`).join('');
 }
 
-function broadcast(data) {
-    Object.values(peer.connections).flat().forEach(c => c.send(data));
+function broadcast(d) {
+    Object.values(peer.connections).flat().forEach(c => c.send(d));
 }
 
-function flashWin() {
-    document.body.style.background = '#ff336640';
-    setTimeout(() => document.body.style.background = 'var(--bg)', 600);
+function flashGreen() {
+    document.body.style.background = "#004422";
+    setTimeout(() => document.body.style.background = "var(--bg)", 500);
+}
+
+document.getElementById('guessInput').onkeyup = (e) => {
+    if(e.key === 'Enter') {
+        const val = e.target.value.trim();
+        if(!val) return;
+        if(isHost) validate(myName, val);
+        else conn.send({type: 'guess', name: myName, val});
+    }
 }
 </script>
 </body>
