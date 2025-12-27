@@ -3,26 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MemeBlitz 50 ⚡ Stable</title>
+    <title>MemeBlitz 50 - Turbo</title>
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <style>
         :root { --primary: #00ff88; --bg: #0f172a; --card: #1e293b; --text: #f8fafc; }
         body { font-family: sans-serif; background: var(--bg); color: var(--text); text-align: center; margin: 0; padding: 10px; }
         .container { max-width: 500px; margin: auto; background: var(--card); padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .meme-box { width: 100%; height: 300px; background: #000; border-radius: 15px; display: flex; align-items: center; justify-content: center; margin: 15px 0; border: 2px solid #334155; overflow: hidden; }
+        .meme-box { width: 100%; height: 300px; background: #000; border-radius: 15px; display: flex; align-items: center; justify-content: center; margin: 15px 0; border: 2px solid #334155; overflow: hidden; position: relative; }
         img { max-width: 100%; max-height: 100%; display: none; object-fit: contain; }
-        input { padding: 15px; width: 70%; border-radius: 10px; border: none; font-size: 16px; margin: 5px; outline: none; }
-        .btn { padding: 15px 25px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; background: var(--primary); color: #000; }
+        input { padding: 15px; width: 65%; border-radius: 10px; border: none; font-size: 16px; margin: 5px; outline: none; background: #0f172a; color: white; }
+        .btn { padding: 15px 20px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; background: var(--primary); color: #000; }
         .timer-wrap { width: 100%; height: 8px; background: #334155; border-radius: 4px; margin: 10px 0; }
         #timerBar { width: 100%; height: 100%; background: var(--primary); transition: width 1s linear; border-radius: 4px; }
         .hidden { display: none; }
-        #loader { font-weight: bold; color: var(--primary); }
+        #loader { position: absolute; font-weight: bold; color: var(--primary); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 style="color: var(--primary); margin-top: 0;">MEMEBLITZ 50 ⚡</h2>
+    <h2 style="color: var(--primary);">MEMEBLITZ 50 ⚡</h2>
     
     <div id="setupScreen">
         <input type="text" id="username" placeholder="Nickname">
@@ -42,20 +42,28 @@
     <div id="gameUI" class="hidden">
         <div class="timer-wrap"><div id="timerBar"></div></div>
         <div class="meme-box">
-            <div id="loader">FETCHING MEME...</div>
+            <div id="loader">TURBO LOADING...</div>
             <img id="memeImg" src="">
         </div>
-        <div style="display: flex; justify-content: center; align-items: center;">
-            <input type="text" id="guessInput" placeholder="Answer here...">
+        <div style="display: flex; justify-content: center;">
+            <input type="text" id="guessInput" placeholder="Guess...">
             <button class="btn" onclick="sendGuess()">GO</button>
         </div>
-        <button id="skipBtn" class="btn hidden" style="background:#fbbf24; width: 100%; margin-top: 10px;" onclick="nextMeme()">SKIP ⏭️</button>
-        <div id="scoreList" style="margin-top: 15px; font-size: 14px; opacity: 0.8;"></div>
+        <div id="scoreList" style="margin-top: 15px; font-weight: bold; color: var(--primary);"></div>
     </div>
 </div>
 
 <script>
-// USES ONLY OFFICIAL GOOGLE & WIKIMEDIA PUBLIC DOMAIN LINKS (Guaranteed to load)
+// Logic to handle fast loading via pre-caching
+const cache = {};
+function preload(url) {
+    if (!cache[url]) {
+        const img = new Image();
+        img.src = url;
+        cache[url] = img;
+    }
+}
+
 const memeDB = [
     { url: "https://upload.wikimedia.org/wikipedia/en/9/9a/Trollface_non-free.png", ans: ["troll"] },
     { url: "https://upload.wikimedia.org/wikipedia/en/5/5f/Original_Doge_meme.jpg", ans: ["doge", "shiba"] },
@@ -63,10 +71,10 @@ const memeDB = [
     { url: "https://www.gstatic.com/webp/gallery/1.sm.webp", ans: ["mountain"] },
     { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/June_odd-eyed-cat.jpg/600px-June_odd-eyed-cat.jpg", ans: ["cat"] },
     { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Keep_Calm_and_Carry_On_Poster.svg/400px-Keep_Calm_and_Carry_On_Poster.svg.png", ans: ["keep calm"] },
-    { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Common_chimpanzee_folded_hands.jpg/600px-Common_chimpanzee_folded_hands.jpg", ans: ["monkey", "chimp"] },
-    { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Starsantilles.jpg/600px-Starsantilles.jpg", ans: ["stars"] },
+    { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Common_chimpanzee_folded_hands.jpg/600px-Common_chimpanzee_folded_hands.jpg", ans: ["monkey"] },
     { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/02/Sea_Otter_at_the_Vancouver_Aquarium_fix.jpg/600px-Sea_Otter_at_the_Vancouver_Aquarium_fix.jpg", ans: ["otter"] },
-    { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f3/Fallow_deer_02.jpg/600px-Fallow_deer_02.jpg", ans: ["deer"] }
+    { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/Turkish_Salt_Bae_Chef.jpg/400px-Turkish_Salt_Bae_Chef.jpg", ans: ["salt bae"] },
+    { url: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Logan_Rock_Treen_closeup.jpg/600px-Logan_Rock_Treen_closeup.jpg", ans: ["the rock"] }
 ];
 
 let peer, conn, myName, scores = {}, isHost = false, currentIdx = -1, timeLeft = 30, timerActive = false;
@@ -75,7 +83,6 @@ function init(host) {
     isHost = host;
     myName = document.getElementById('username').value || "Player";
     peer = new Peer();
-    
     peer.on('open', id => {
         document.getElementById('setupScreen').classList.add('hidden');
         document.getElementById('lobbyScreen').classList.remove('hidden');
@@ -83,7 +90,6 @@ function init(host) {
             scores[myName] = 0;
             document.getElementById('roomDisplay').innerText = "ID: " + id;
             document.getElementById('startBtn').classList.remove('hidden');
-            document.getElementById('waitMsg').classList.add('hidden');
             setupHost();
         } else {
             conn = peer.connect(document.getElementById('joinId').value);
@@ -92,6 +98,8 @@ function init(host) {
                 setupClient();
             });
         }
+        // Background pre-load all memes once the room is joined
+        memeDB.forEach(m => preload(m.url));
     });
 }
 
@@ -127,7 +135,6 @@ function triggerStart() {
     broadcast({type:'start'});
     document.getElementById('lobbyScreen').classList.add('hidden');
     document.getElementById('gameUI').classList.remove('hidden');
-    document.getElementById('skipBtn').classList.remove('hidden');
     nextMeme();
 }
 
@@ -152,9 +159,16 @@ function renderMeme(idx) {
     const ldr = document.getElementById('loader');
     ldr.style.display = 'block';
     img.style.display = 'none';
+    
+    // Immediate load from cache if available
     img.src = memeDB[idx].url;
-    img.onload = () => { ldr.style.display = 'none'; img.style.display = 'block'; if(isHost) timerActive = true; };
+    img.onload = () => { 
+        ldr.style.display = 'none'; 
+        img.style.display = 'block'; 
+        if(isHost) timerActive = true; 
+    };
     document.getElementById('guessInput').value = "";
+    document.getElementById('guessInput').focus();
     updateScoreUI();
 }
 
@@ -164,12 +178,15 @@ function sendGuess() {
     else conn.send({type:'guess', name:myName, val:val});
 }
 
+// Support for Enter key
+document.getElementById('guessInput').onkeydown = (e) => { if(e.key === 'Enter') sendGuess(); };
+
 function updateTimerUI() {
     document.getElementById('timerBar').style.width = (timeLeft/30)*100 + "%";
 }
 
 function updateScoreUI() {
-    document.getElementById('scoreList').innerText = Object.entries(scores).map(([n,s]) => `${n}: ${s}pts`).join(" | ");
+    document.getElementById('scoreList').innerText = Object.entries(scores).map(([n,s]) => `${n}: ${s}`).join(" | ");
 }
 
 function broadcast(d) {
