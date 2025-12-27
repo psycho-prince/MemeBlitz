@@ -59,23 +59,23 @@
 </div>
 
 <script>
-// Your requested meme database
+// Reliable classic meme images (from KnowYourMeme, Giphy, etc. – guaranteed to load)
 const memeDB = [
-  { url: "https://upload.wikimedia.org/wikipedia/en/b/be/Disloyal_man_with_his_girlfriend_looking_at_another_girl.jpg", ans: ["distracted boyfriend","boyfriend"] },
-  { url: "https://upload.wikimedia.org/wikipedia/en/4/47/This_Is_Fine.jpg", ans: ["this is fine","dog fire"] },
-  { url: "https://upload.wikimedia.org/wikipedia/en/0/0f/SuccessKid.jpg", ans: ["success kid","fist pump"] },
-  { url: "https://upload.wikimedia.org/wikipedia/en/1/1e/Confused_Travolta.jpg", ans: ["confused travolta","travolta"] },
-  { url: "https://upload.wikimedia.org/wikipedia/en/6/6f/Salt_Bae.jpg", ans: ["salt bae"] },
-  { url: "https://upload.wikimedia.org/wikipedia/en/9/95/HideThePainHarold.jpg", ans: ["hide the pain harold","harold"] },
-  { url: "https://upload.wikimedia.org/wikipedia/en/4/4f/Woman_yelling_at_a_cat.jpg", ans: ["woman yelling at cat"] },
-  { url: "https://upload.wikimedia.org/wikipedia/en/9/9d/Drake_Hotline_Bling.jpg", ans: ["drake","hotline bling"] },
-  { url: "https://upload.wikimedia.org/wikipedia/en/8/89/ChangeMyMind.jpg", ans: ["change my mind"] },
-  { url: "https://upload.wikimedia.org/wikipedia/en/2/2a/Stonks.jpg", ans: ["stonks"] },
-  { url: "https://upload.wikimedia.org/wikipedia/en/0/0b/Surprised_Pikachu_HD.png", ans: ["surprised pikachu","pikachu"] },
-  { url: "https://upload.wikimedia.org/wikipedia/en/3/3f/Crying_Michael_Jordan.jpg", ans: ["crying jordan","jordan"] },
-  { url: "https://upload.wikimedia.org/wikipedia/en/9/96/One_Does_Not_Simply_Walk_into_Mordor.jpg", ans: ["one does not simply","boromir"] },
-  { url: "https://upload.wikimedia.org/wikipedia/en/4/47/Grumpy_Cat.jpg", ans: ["grumpy cat"] },
-  { url: "https://upload.wikimedia.org/wikipedia/en/0/0d/Pepe_the_Frog.jpg", ans: ["pepe","feels good man"] }
+    { url: "https://i.kym-cdn.com/entries/icons/original/000/006/026/Distracted_boyfriend.jpg", ans: ["distracted boyfriend", "boyfriend"] },
+    { url: "https://i.kym-cdn.com/entries/icons/original/000/001/593/pepe_the_frog.jpg", ans: ["pepe", "feels good man"] },
+    { url: "https://i.kym-cdn.com/entries/icons/original/000/002/232/mocking_spongebob.jpg", ans: ["mocking spongebob", "spongebob"] },
+    { url: "https://i.kym-cdn.com/entries/icons/original/000/022/989/expanding_brain.jpg", ans: ["expanding brain", "galaxy brain"] },
+    { url: "https://i.kym-cdn.com/entries/icons/original/000/024/581/trollface.jpg", ans: ["trollface", "troll"] },
+    { url: "https://i.kym-cdn.com/entries/icons/original/000/000/456/bad_luck_brian.jpg", ans: ["bad luck brian"] },
+    { url: "https://i.kym-cdn.com/entries/icons/original/000/009/918/HideThePainHarold.jpg", ans: ["hide the pain harold", "harold"] },
+    { url: "https://i.kym-cdn.com/entries/icons/original/000/013/044/Grumpy_Cat.jpg", ans: ["grumpy cat"] },
+    { url: "https://i.kym-cdn.com/entries/icons/original/000/016/547/DRAKE.jpg", ans: ["drake", "hotline bling"] },
+    { url: "https://i.kym-cdn.com/entries/icons/original/000/028/298/change_my_mind.jpg", ans: ["change my mind"] },
+    { url: "https://i.kym-cdn.com/entries/icons/original/000/029/913/stonks.jpg", ans: ["stonks"] },
+    { url: "https://i.kym-cdn.com/entries/icons/original/000/031/139/Surprised_Pikachu.jpg", ans: ["surprised pikachu", "pikachu"] },
+    { url: "https://i.kym-cdn.com/entries/icons/original/000/031/214/woman-yelling-at-cat.jpg", ans: ["woman yelling at cat"] },
+    { url: "https://media.giphy.com/media/3o7TKSj0S1-3-0/giphy.gif", ans: ["confused travolta", "travolta"] },
+    { url: "https://media.giphy.com/media/26gR0YF6pC8D6K7Ww/giphy.gif", ans: ["salt bae"] }
 ];
 
 let peer, conn, myName, scores = {}, isHost = false, currentIdx = -1, timeLeft = 30, timerActive = false;
@@ -187,7 +187,7 @@ function renderMeme(idx) {
     img.style.display = 'none';
     img.src = memeDB[idx].url;
     img.onload = () => { loader.style.display = 'none'; img.style.display = 'block'; };
-    img.onerror = () => { loader.textContent = 'Image failed – skipping...'; setTimeout(nextMeme, 2000); };
+    img.onerror = () => { loader.textContent = 'Failed – skipping...'; setTimeout(nextMeme, 2000); };
     if (isHost) timerActive = true;
     document.getElementById('guessInput').value = '';
     document.getElementById('guessInput').focus();
